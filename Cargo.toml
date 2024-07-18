@@ -1,0 +1,13 @@
+[package]
+name = "declarative_type_state"
+version = "0.1.0"
+authors = ["Houtamelo"]
+edition = "2021"
+description = "A collection of declarative macros to reduce boilerplate code when implementing type-state patterns"
+license = "MIT"
+repository = "https://github.com/Houtamelo/declarative_type_state"
+categories = ["rust-patterns", "data-structures"]
+keywords = ["declarative", "macros", "type-state", "enum", "patterns"]
+
+[lib]
+crate-type = ["lib", "cdylib"]
