@@ -13,49 +13,49 @@ mod extract_variants;
 pub mod transition_result {
 	use std::ops::{ControlFlow, FromResidual, Try};
 
-	pub enum TransitionResult<TSelf, TEnum> {
-		Transitioned(TEnum),
-		Unchanged(TSelf),
+	pub enum Transition<TCurr, TNext> {
+		Transitioned(TNext),
+		Unchanged(TCurr),
 	}
 
-	impl<TSelf, TEnum> FromResidual for TransitionResult<TSelf, TEnum> {
+	impl<TCurr, TNext> FromResidual for Transition<TCurr, TNext> {
 		fn from_residual(residual: <Self as Try>::Residual) -> Self {
-			TransitionResult::Transitioned(residual)
+			Transition::Transitioned(residual)
 		}
 	}
 
-	impl<TSelf, TEnum> Try for TransitionResult<TSelf, TEnum> {
-		type Output = TSelf;
-		type Residual = TEnum;
+	impl<TCurr, TNext> Try for Transition<TCurr, TNext> {
+		type Output = TCurr;
+		type Residual = TNext;
 
 		fn from_output(output: Self::Output) -> Self {
-			TransitionResult::Unchanged(output)
+			Transition::Unchanged(output)
 		}
 
 		fn branch(self) -> ControlFlow<Self::Residual, Self::Output> {
 			match self {
-				TransitionResult::Transitioned(new) => {
+				Transition::Transitioned(new) => {
 					ControlFlow::Break(new)
 				}
-				TransitionResult::Unchanged(same) => {
+				Transition::Unchanged(same) => {
 					ControlFlow::Continue(same)
 				}
 			}
 		}
 	}
 
-	pub trait ToTransitionResult: Sized {
-		fn to_result_self<T>(self) -> TransitionResult<Self, T> {
-			TransitionResult::Unchanged(self)
+	pub trait ToTransition: Sized {
+		fn unchanged<TNext>(self) -> Transition<Self, TNext> {
+			Transition::Unchanged(self)
 		}
 
-		fn to_result_enum<T>(self) -> TransitionResult<Self, T>
+		fn transitioned<TCurr, TNext>(self) -> Transition<TCurr, TNext>
 			where
-				T: From<Self>,
+				TNext: From<Self>,
 		{
-			TransitionResult::Transitioned(self.into())
+			Transition::Transitioned(self.into())
 		}
 	}
 	
-	impl<T: Sized> ToTransitionResult for T {}
+	impl<T: Sized> ToTransition for T {}
 }
