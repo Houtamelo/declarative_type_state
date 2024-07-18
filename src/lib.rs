@@ -1,4 +1,5 @@
 #![cfg_attr(feature = "try_impl", feature(try_trait_v2))]
+#![feature(type_changing_struct_update)]
 #![allow(clippy::tabs_in_doc_comments)]
 
 mod extract_variants_into_enum;
@@ -44,18 +45,11 @@ pub mod transition_result {
 		}
 	}
 
-	pub trait ToTransition: Sized {
-		fn unchanged<TNext>(self) -> Transition<Self, TNext> {
-			Transition::Unchanged(self)
-		}
-
-		fn transitioned<TCurr, TNext>(self) -> Transition<TCurr, TNext>
-			where
-				TNext: From<Self>,
-		{
-			Transition::Transitioned(self.into())
-		}
+	pub fn unchanged<TCurr, TNext>(curr: TCurr) -> Transition<TCurr, TNext> {
+		Transition::Unchanged(curr)
 	}
-	
-	impl<T: Sized> ToTransition for T {}
+
+	pub fn transitioned<TCurr, TNext>(next: impl Into<TNext>) -> Transition<TCurr, TNext> {
+		Transition::Transitioned(next.into())
+	}
 }

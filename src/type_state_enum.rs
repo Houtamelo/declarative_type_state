@@ -3,7 +3,7 @@ macro_rules! type_state_enum {
 	//------------------------------------------------------------------------------------------------------------------
 	// User provided state struct
     (
-	    STATE: $state_ident: ident;
+	    STATE: $state_ident: ident { $state_field_ident: ident }
 
 	    ENUM: {
 		    #[vars( $( $all_meta: meta ),* $(,)? )]
@@ -47,6 +47,16 @@ macro_rules! type_state_enum {
 				}
 			}
 		}
+	    
+	    impl<Curr> $state_ident<Curr> {
+		    #[allow(clippy::needless_update)]
+		    pub fn transition_to<Next>(self, next: Next) -> $state_ident<Next> {
+			    $state_ident::<Next> {
+				    $state_field_ident: next,
+				    ..self
+			    }
+		    }
+	    }
 		
 		$crate::extract_variants! {
 		    #[vars( $( $all_meta ),* )]
@@ -117,11 +127,11 @@ macro_rules! type_state_enum {
 		$( #[ $state_meta ] )*
 		$state_vis struct $state_ident<T: ?Sized> {
 			$( $state_field_ident : $state_field_ty ),*
-			variant: T,
+			state: T,
 		}
 		
 		$crate::type_state_enum! {
-		    STATE: $state_ident;
+		    STATE: $state_ident { state }
 			
 			ENUM: {
 			    #[vars( $( $all_meta ),* $(,)? )]
@@ -150,10 +160,12 @@ macro_rules! type_state_enum {
 #[allow(unused)]
 mod test {
 	#[derive(Clone, Debug)]
-	pub struct State<T: ?Sized>(T);
+	pub struct State<T: ?Sized> {
+		state: T,
+	}
 
 	type_state_enum! {
-		STATE: State;
+		STATE: State { state }
 		
 		ENUM: {
 			#[vars(derive(Clone, Debug))]
