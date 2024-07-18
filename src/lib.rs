@@ -10,34 +10,36 @@ mod extract_single_variant;
 mod extract_variants;
 
 #[cfg(feature = "try_impl")]
-pub enum TransitionResult<TSelf, TEnum> {
-	Transitioned(TEnum),
-	Unchanged(TSelf),
-}
+pub mod transition_result {
+	use std::ops::{ControlFlow, FromResidual, Try};
 
-#[cfg(feature = "try_impl")]
-impl<TSelf, TEnum> std::ops::FromResidual for TransitionResult<TSelf, TEnum> {
-	fn from_residual(residual: <Self as std::ops::Try>::Residual) -> Self {
-		TransitionResult::Transitioned(residual)
+	pub enum TransitionResult<TSelf, TEnum> {
+		Transitioned(TEnum),
+		Unchanged(TSelf),
 	}
-}
-
-#[cfg(feature = "try_impl")]
-impl<TSelf, TEnum> std::ops::Try for TransitionResult<TSelf, TEnum> {
-	type Output = TSelf;
-	type Residual = TEnum;
-
-	fn from_output(output: Self::Output) -> Self {
-		TransitionResult::Unchanged(output)
+	
+	impl<TSelf, TEnum> FromResidual for TransitionResult<TSelf, TEnum> {
+		fn from_residual(residual: <Self as Try>::Residual) -> Self {
+			TransitionResult::Transitioned(residual)
+		}
 	}
+	
+	impl<TSelf, TEnum> Try for TransitionResult<TSelf, TEnum> {
+		type Output = TSelf;
+		type Residual = TEnum;
 
-	fn branch(self) -> std::ops::ControlFlow<Self::Residual, Self::Output> {
-		match self {
-			TransitionResult::Transitioned(new) => {
-				std::ops::ControlFlow::Break(new)
-			}
-			TransitionResult::Unchanged(same) => {
-				std::ops::ControlFlow::Continue(same)
+		fn from_output(output: Self::Output) -> Self {
+			TransitionResult::Unchanged(output)
+		}
+
+		fn branch(self) -> ControlFlow<Self::Residual, Self::Output> {
+			match self {
+				TransitionResult::Transitioned(new) => {
+					ControlFlow::Break(new)
+				}
+				TransitionResult::Unchanged(same) => {
+					ControlFlow::Continue(same)
+				}
 			}
 		}
 	}
