@@ -17,13 +17,13 @@ pub mod transition_result {
 		Transitioned(TEnum),
 		Unchanged(TSelf),
 	}
-	
+
 	impl<TSelf, TEnum> FromResidual for TransitionResult<TSelf, TEnum> {
 		fn from_residual(residual: <Self as Try>::Residual) -> Self {
 			TransitionResult::Transitioned(residual)
 		}
 	}
-	
+
 	impl<TSelf, TEnum> Try for TransitionResult<TSelf, TEnum> {
 		type Output = TSelf;
 		type Residual = TEnum;
@@ -43,4 +43,19 @@ pub mod transition_result {
 			}
 		}
 	}
+
+	pub trait ToTransitionResult: Sized {
+		fn to_result_self<T>(self) -> TransitionResult<Self, T> {
+			TransitionResult::Unchanged(self)
+		}
+
+		fn to_result_enum<T>(self) -> TransitionResult<Self, T>
+			where
+				T: From<Self>,
+		{
+			TransitionResult::Transitioned(self.into())
+		}
+	}
+	
+	impl<T: Sized> ToTransitionResult for T {}
 }
