@@ -11,3 +11,7 @@ keywords = ["declarative", "macros", "type-state", "enum", "patterns"]
 
 [lib]
 crate-type = ["lib", "cdylib"]
+
+[features]
+default = []
+try_impl = []
