@@ -50,10 +50,10 @@ macro_rules! type_state_enum {
 	    
 	    impl<Curr> $state_ident<Curr> {
 		    #[allow(clippy::needless_update)]
-		    pub fn transition_to<Next>(self, next: Next) 
-		        -> $crate::Transition<Self, $state_ident<Next>> 
+		    pub fn transition_to<Next, Enum>(self, next: Next) 
+		        -> $crate::Transition<Self, Enum> where $state_ident<Next>: Into<Enum>
 		    {
-			    $crate::ChangedTo(self.with_state(next))
+			    $crate::ChangedTo(self.with_state(next).into())
 		    }
 		    
 		    #[allow(clippy::needless_update)]
@@ -200,7 +200,7 @@ mod test {
 	}
 	
 	fn test(mut x: State<Int>) {
-		let t: Transition<State<Int>, State<Unit>> = x.transition_to(Unit);
+		let t: Transition<State<Int>, StateEnum> = x.transition_to(Unit);
 	}
 	
 	trait Tick {
