@@ -4,4 +4,4 @@ version = 3
 
 [[package]]
 name = "declarative_type_state"
-version = "0.1.4"
+version = "0.1.5"

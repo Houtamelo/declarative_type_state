@@ -43,12 +43,14 @@ macro_rules! enum_delegate_impls {
 	) => {
 		$(
 			impl $trait_ident for $enum_ident {
-				$crate::enum_delegate_impls! {
-					@TRAIT_ITEM
-					$enum_ident
-					$enum_vars
-					$( $item )*
-				}
+				$(
+					$crate::enum_delegate_impls! {
+						@TRAIT_ITEM
+						$enum_ident
+						$enum_vars
+						$item
+					}
+				)*
 			}
 		)*
 	};
@@ -327,37 +329,36 @@ macro_rules! enum_delegate_impls {
 mod test {
 	#[derive(Clone, Debug)]
 	pub struct State<T: ?Sized>(T);
-	
+
 	enum StateEnum {
 		Int(State<i32>),
 		UInt(State<u32>),
-		Float(State<f64>),
-		Bool(State<bool>),
-		Unit(State<()>),
-	}
-	
-	trait Tick {
-		fn tick(&mut self, delta_time: f64);
 	}
 
+	trait Tick {
+		fn tick(&mut self, delta_time: f64);
+
+		fn test(&self);
+	}
+
+	
 	enum_delegate_impls! {
 		ENUM: {
 			StateEnum {
 				Int(State<i32>),
 				UInt(State<u32>),
-				Float(State<f64>),
-				Bool(State<bool>),
-				Unit(State<()>),
 			}
 		}
 		
 		DELEGATES: { 
 			trait Tick {
-				[fn tick(&mut self, delta_time: f64);]
+				[fn tick(&mut self, delta_time: f64)]
+				
+				[fn test(&self);]
 			}
 		}
 	}
-	
+
 	fn test(x: &mut StateEnum) {
 		x.tick(2.0);
 	}
@@ -366,28 +367,18 @@ mod test {
 		fn tick(&mut self, delta_time: f64) {
 			todo!()
 		}
+
+		fn test(&self) {
+			todo!()
+		}
 	}
 
 	impl Tick for State<u32> {
 		fn tick(&mut self, delta_time: f64) {
 			todo!()
 		}
-	}
 
-	impl Tick for State<f64> {
-		fn tick(&mut self, delta_time: f64) {
-			todo!()
-		}
-	}
-
-	impl Tick for State<bool> {
-		fn tick(&mut self, delta_time: f64) {
-			todo!()
-		}
-	}
-
-	impl Tick for State<()> {
-		fn tick(&mut self, delta_time: f64) {
+		fn test(&self) {
 			todo!()
 		}
 	}

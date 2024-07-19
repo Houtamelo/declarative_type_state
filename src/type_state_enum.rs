@@ -50,7 +50,14 @@ macro_rules! type_state_enum {
 	    
 	    impl<Curr> $state_ident<Curr> {
 		    #[allow(clippy::needless_update)]
-		    pub fn transition_to<Next>(self, next: Next) -> $state_ident<Next> {
+		    pub fn transition_to<Next>(self, next: Next) 
+		        -> $crate::Transition<Self, $state_ident<Next>> 
+		    {
+			    $crate::ChangedTo(self.with_state(next))
+		    }
+		    
+		    #[allow(clippy::needless_update)]
+		    pub fn with_state<Next>(self, next: Next) -> $state_ident<Next> {
 			    $state_ident::<Next> {
 				    $state_field_ident: next,
 				    ..self
@@ -159,6 +166,8 @@ macro_rules! type_state_enum {
 #[cfg(test)]
 #[allow(unused)]
 mod test {
+	use crate::transition_result::Transition;
+
 	#[derive(Clone, Debug)]
 	pub struct State<T: ?Sized> {
 		state: T,
@@ -179,7 +188,7 @@ mod test {
 				 },
 				 Float(f32, i32),
 				 Bool(bool),
-				 Unit(),
+				 Unit,
 			}
 		}
 		
@@ -190,8 +199,8 @@ mod test {
 		}
 	}
 	
-	fn test(x: &mut StateEnum) {
-		x.tick(2.0);
+	fn test(mut x: State<Int>) {
+		let t: Transition<State<Int>, State<Unit>> = x.transition_to(Unit);
 	}
 	
 	trait Tick {
