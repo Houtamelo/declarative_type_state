@@ -13,21 +13,7 @@ macro_rules! extract_single_variant {
 	) => {
 		$( #[$all_meta] )*
 		$( #[$var_meta] )*
-		$var_vis struct $var_ident { pub t: ($( $field_ty, )*) }
-	    
-	    impl std::ops::Deref for $var_ident {
-			type Target = ( $( $field_ty, )* );
-			
-			fn deref(&self) -> &Self::Target {
-				&self.t
-			}
-		}
-	    
-		impl std::ops::DerefMut for $var_ident {
-			fn deref_mut(&mut self) -> &mut Self::Target {
-				&mut self.t
-			}
-		}
+		$var_vis struct $var_ident ( $( pub $field_ty, )* );
 	};
 	
 	//------------------------------------------------------------------------------------------------------------------

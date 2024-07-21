@@ -1,54 +1,5 @@
-/// # Generates a collection type that contains a single value of each type
-/// The types must be unique!
-///
-/// For a combination of this and [variant_types](crate::extract_variants_into_enum), see [variant_types_table](crate::variant_types_table)
-///
-/// # Usage
-/// ```
-/// mod table {
-/// 
-/// use declarative_type_state::type_table;
-///
-/// type_table! {
-///     pub struct DurationTable {
-///         seconds: f32,
-///         hours: i32,
-///         infinite: (),
-///     }
-/// }
-///
-/// }
-/// 
-/// // The values can be accessed by using `get::<T>` or `get_mut::<T>`:
-/// let mut table = table::DurationTable::new(2.0, 5, ());
-///
-/// let seconds = table.get::<f32>();
-/// let hours = table.get_mut::<i32>();
-/// ```
-///
-/// ## The Table also implements:
-/// - fn iter(&self) -> Iterator<Item = Ref<T>>
-/// - fn iter_mut(&mut self) -> Iterator<Item = RefMut<T>>
-/// - fn into_iter(self) -> Iterator<Item = Owned<T>>
-///
-/// # Example
-///
-/// ```
-/// mod table {
-///
-/// declarative_type_state::type_table! {
-///     #[derive(Debug, Clone)]
-///     pub struct DurationTable {
-///         seconds: f32,
-///         hours: i32,
-///         infinite: (),
-///     }
-/// }
-/// 
-/// }
-/// ```
 #[macro_export]
-macro_rules! type_table {
+macro_rules! type_value_table {
 	//------------------------------------------------------------------------------------------------------------------
 	// Table + Generated enum
 	(
@@ -66,16 +17,16 @@ macro_rules! type_table {
 		
 		TABLE: {
 			$( #[$table_meta: meta] )*
-			$table_vis: vis struct $table_ident: ident $(;)? $({})?
+			$table_vis: vis struct $table_ident: ident <$T: ty> $(;)? $({})?
 		}
 	) => {
-		$crate::type_table! {
+		$crate::type_value_table! {
 			ENUM: $enum_ident;
 			
 			TABLE: {
 				$( #[$table_meta] )*
-				$table_vis struct $table_ident {
-				    $( $var_ident: $var_ident ),*
+				$table_vis struct $table_ident <$T> {
+				    $( $var_ident ),*
 			    }
 			}
 		}
@@ -109,7 +60,7 @@ macro_rules! type_table {
 		
 		TABLE: {
 			$( #[$table_meta: meta] )*
-			$table_vis: vis struct $table_ident: ident $(;)? $({})?
+			$table_vis: vis struct $table_ident: ident <$T: ty> $(;)? $({})?
 		}
 		
 		DELEGATES: {
@@ -120,7 +71,7 @@ macro_rules! type_table {
 		    )*
 	    }
 	) => {
-		$crate::type_table! {
+		$crate::type_value_table! {
 			ENUM: {
 			    #[vars( $( $all_meta ),* )]
 			    $( #[$enum_meta] )*
@@ -134,7 +85,7 @@ macro_rules! type_table {
 			
 			TABLE: {
 				$( #[$table_meta] )*
-				$table_vis struct $table_ident
+				$table_vis struct $table_ident <$T>
 			}
 		}
 		
@@ -162,27 +113,26 @@ macro_rules! type_table {
 		
 		TABLE: {
 			$( #[$table_meta: meta] )*
-			$table_vis: vis struct $table_ident: ident {
-			    $( $var_ident: ident: $var_ty: ty ),*
+			$table_vis: vis struct $table_ident: ident <$T: ty> {
+			    $( $var_ident: ident ),*
 			    $(,)?
 		    }
 		}
 	) => {
-		$crate::type_table! {
+		$crate::type_value_table! {
 			$( #[$table_meta] )*
-			$table_vis struct $table_ident {
-			    $( $var_ident: $var_ty ),*
+			$table_vis struct $table_ident <$T> {
+			    $( $var_ident ),*
 		    }
 		}
 		
 		impl IntoIterator for $table_ident {
-		    type Item = $enum_ident;
-			type IntoIter = core::array::IntoIter<$enum_ident, { $table_ident::LENGTH }>;
+		    type Item = $T;
+			type IntoIter = core::array::IntoIter<$T, { $table_ident::LENGTH }>;
 	
 			fn into_iter(self) -> Self::IntoIter {
-				[ 
-					$( $enum_ident::$var_ident(self.$var_ident) ),* 
-				].into_iter()
+				[ $( self.$var_ident ),* ]
+				.into_iter()
 			}
 	    }
 	};
@@ -191,8 +141,8 @@ macro_rules! type_table {
 	// Base impl
 	(
 		$( #[$table_meta: meta] )*
-		$table_vis: vis struct $table_ident: ident {
-		    $( $var_ident: ident: $var_ty: ty ),*
+		$table_vis: vis struct $table_ident: ident <$T: ty> {
+		    $( $var_ident: ident ),*
 		    $(,)?
 	    }
 	) => {
@@ -200,44 +150,33 @@ macro_rules! type_table {
 		#[allow(non_snake_case)]
 		$( #[$table_meta] )*
 	    $table_vis struct $table_ident {
-	        $($var_ident: $var_ty),*
+	        $($var_ident: $T),*
 	    }
 		
 		#[allow(non_camel_case_types)]
 		$table_vis enum TypeRef<'a> {
-		    $($var_ident(&'a $var_ty)),*
+		    $($var_ident(&'a $T)),*
 	    }
 	    
 		#[allow(non_camel_case_types)]
 	    $table_vis enum TypeRefMut<'a> {
-		    $($var_ident(&'a mut $var_ty)),*
+		    $($var_ident(&'a mut $T)),*
 	    }
 		
 		#[doc(hidden)]
-		#[allow(non_snake_case)]
+		type _Inner = $T;
+		
+		#[doc(hidden)]
 		pub mod new_fn {
-			use super::*;
-			use super::$table_ident;
+			use super::{$table_ident, _Inner};
 			
-			$(
-				#[doc(hidden)]
-				mod $var_ident {
-					use super::super::*;
-					pub type Ty = $var_ty;
-				} 
-			)*
-			
-			pub mod inner {
-				use super::$table_ident;
-				
-				impl $table_ident {
-					#[allow(non_snake_case)]
-					pub fn new( $( $var_ident: super::$var_ident::Ty ),* ) -> Self {
-				        Self {
-				            $($var_ident),*
-				        }
-				    }
-				}
+			impl $table_ident {
+				#[allow(non_snake_case)]
+				pub fn new( $( $var_ident: _Inner ),* ) -> Self {
+			        Self {
+			            $($var_ident),*
+			        }
+			    }
 			}
 		}
 		
@@ -249,7 +188,7 @@ macro_rules! type_table {
 		        let mut count = 0;
 		        $( 
 		            { 
-			            Self::ignore::<$var_ty>();
+			            Self::ignore::<$var_ident>();
 		            }
 		            
 		            count += 1;
@@ -258,11 +197,11 @@ macro_rules! type_table {
 		        count
 	        };
 			
-			pub fn get<T: GetInTable>(&self) -> &T {
+			pub fn get<T: GetInTable>(&self) -> & $T {
 			    T::get_in_table(self)
 		    }
 			    
-			pub fn get_mut<T: GetInTable>(&mut self) -> &mut T {
+			pub fn get_mut<T: GetInTable>(&mut self) -> &mut $T {
 			    T::get_in_table_mut(self)
 		    }
 			
@@ -286,17 +225,17 @@ macro_rules! type_table {
 		}
 		
 		$table_vis trait GetInTable { 
-		    fn get_in_table(table: & $table_ident) -> &Self;
-	        fn get_in_table_mut(table: &mut $table_ident) -> &mut Self;
+		    fn get_in_table(table: & $table_ident) -> & $T;
+	        fn get_in_table_mut(table: &mut $table_ident) -> &mut $T;
 	    }
 		    
 	    $(
-		    impl GetInTable for $var_ty {
-	            fn get_in_table(table: & $table_ident) -> &Self {
+		    impl GetInTable for $var_ident {
+	            fn get_in_table(table: & $table_ident) -> & $T {
 	                &table.$var_ident
 	            }
 		        
-	            fn get_in_table_mut(table: &mut $table_ident) -> &mut Self {
+	            fn get_in_table_mut(table: &mut $table_ident) -> &mut $T {
 	                &mut table.$var_ident
 	            }
 	        }
@@ -307,9 +246,9 @@ macro_rules! type_table {
 #[allow(unused)]
 #[cfg(test)]
 mod tests {
-	use crate::type_table;
+	use crate::type_value_table;
 
-	type_table! {
+	type_value_table! {
 		ENUM: {
 			#[vars(derive(Debug, Clone))]
 			pub enum Duration {
@@ -323,22 +262,23 @@ mod tests {
 		TABLE: { 
 			// Name of the module that will contain all the generated code
 			#[derive(Debug, Clone)] // Attributes to apply on the Table
-			pub struct DurationTable;
+			pub struct DurationTable < i32 >
 		}
 	}
 }
 
-/// ```
-/// 
-/// ```
+
 #[allow(unused)]
 #[cfg(test)]
 mod tests_2 {
-	use crate::type_table;
+	use crate::type_value_table;
 	use std::fmt::Debug;
 	use std::fmt::Formatter;
+	
+	#[derive(Debug, Clone)]
+	pub struct Sealed;
 
-	type_table! {
+	type_value_table! {
 		ENUM: {
 			#[vars(derive(Debug, Clone))]
 			pub enum Duration {
@@ -352,7 +292,7 @@ mod tests_2 {
 		TABLE: { 
 			// Name of the module that will contain all the generated code
 			#[derive(Debug, Clone)] // Attributes to apply on the Table
-			pub struct DurationTable;
+			pub struct DurationTable <Sealed>
 		}
 		
 		DELEGATES: {
@@ -362,3 +302,4 @@ mod tests_2 {
 		}
 	}
 }
+

@@ -32,8 +32,8 @@
 /// ```
 /// #[derive(Debug, Clone, PartialEq)] pub struct Int { pub field: i32 }
 /// #[derive(Debug, Clone)] pub struct UInt { pub x: i32, pub y: i32 }
-/// #[derive(Debug, Clone)] pub struct Float { pub t: (f32, i32) }
-/// #[derive(Debug, Clone)] pub struct Bool { pub t: (bool) }
+/// #[derive(Debug, Clone)] pub struct Float(pub f32, pub i32);
+/// #[derive(Debug, Clone)] pub struct Bool(pub bool);
 /// #[derive(Debug, Clone)] pub struct Test;
 ///
 /// #[derive(Debug)]
@@ -98,5 +98,54 @@ macro_rules! extract_variants_into_enum {
 			    $( $var_ident ($var_ident) ),*
 		    }
 	    }
+    };
+	
+	(
+		ENUM: {
+			#[vars( $( $all_meta: meta ),* $(,)? )]
+			$( #[$enum_meta: meta] )*
+			$enum_vis: vis enum $enum_ident: ident {
+			    $(
+			        $( #[$var_meta: meta] )*
+			        $var_ident: ident $( ( $($var_tuple: tt)* ) )? $( { $($var_fields: tt)* } )?
+			    ),*
+			    $(,)?
+		    }
+		}
+		
+		DELEGATES: {
+			$(
+		        $trait_vis: vis trait $trait_ident: ident $( < [ $( $gens: tt )* ] > )? {
+				    $( [ $( $item: tt )* ] )*
+			    }
+		    )*
+		}
+    ) => {
+		$crate::extract_variants_into_enum! {
+			#[vars( $( $all_meta ),* $(,)? )]
+			$( #[$enum_meta] )*
+			$enum_vis enum $enum_ident {
+			    $(
+			        $( #[$var_meta] )*
+			        $var_ident $( ( $($var_tuple)* ) )? $( { $($var_fields)* } )?
+			    ),*
+		    }
+		}
+		
+		$crate::enum_delegate_impls! {
+			ENUM: {
+				$enum_vis enum $enum_ident {
+				    $( $var_ident ($var_ident) ),*
+			    }
+			}
+			
+			DELEGATES: {
+			    $(
+			        $trait_vis trait $trait_ident $( < [ $( $gens )* ] > )? {
+					    $( [ $( $item )* ] )*
+				    }
+			    )*
+		    }
+		}
     };
 }

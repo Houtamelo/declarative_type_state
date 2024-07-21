@@ -4,6 +4,7 @@
 
 mod extract_variants_into_enum;
 mod type_table;
+mod type_value_table;
 mod enum_variants_convert;
 mod type_state_enum;
 mod enum_delegate_impls;

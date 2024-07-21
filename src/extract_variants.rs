@@ -30,8 +30,8 @@
 /// ```
 /// #[derive(Debug, Clone, PartialEq)] pub struct Int { pub field: i32 }
 /// #[derive(Debug, Clone)] pub struct UInt { pub x: i32, pub y: i32 }
-/// #[derive(Debug, Clone)] pub struct Float { pub t: (f32, i32) }
-/// #[derive(Debug, Clone)] pub struct Bool { pub t: (bool) }
+/// #[derive(Debug, Clone)] pub struct Float(pub f32, pub i32);
+/// #[derive(Debug, Clone)] pub struct Bool(pub bool);
 /// #[derive(Debug, Clone)] pub struct Test;
 /// ```
 /// 
@@ -65,11 +65,11 @@
 /// ```
 /// #[derive(Clone)]
 /// #[repr(transparent)]
-/// struct Var_1{ pub t: (i32, i64) }
+/// struct Var_1(i64);
 ///
 /// #[derive(Clone)]
 /// #[repr(transparent)]
-/// struct Var_2{ pub value: f64 }
+/// struct Var_2 { pub value: f64 }
 /// ```
 /// 
 /// ---
@@ -109,8 +109,6 @@
 /// - Any number of variants is supported
 /// - Enum variant syntax is fully supported: "Variant, Variant(i32, ..), Variant { field: i32, .. }"
 /// - You may add attributes to individual variants
-/// - Tuple variants (Variant(i32, ..)) are generated as struct variants with a single tuple field
-///   (Example bellow shows that)
 /// 
 /// #### Example
 /// 
@@ -124,7 +122,7 @@
 /// Will generate:
 /// ```
 /// struct Int { pub value: i32 }
-/// struct UInt { pub t: (u32, u64) }
+/// struct UInt(pub u32, pub u64);
 /// #[derive(Debug)] struct Empty;
 /// ```
 #[macro_export]
