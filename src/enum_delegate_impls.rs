@@ -10,10 +10,16 @@ macro_rules! enum_delegate_impls {
 	    
 	    DELEGATES: {
 		    $(
-		        $trait_vis: vis trait $trait_ident: ident $( < [ $( $gens: tt )* ] > )? {
+		        trait $trait_ident: ident $( < [ $( $gens: tt )* ] > )? {
 				    $( [ $( $item: tt )* ] )*
 			    }
 		    )*
+		    
+		    $(
+			    impl {
+			        $( [ $( $std_impl: tt )* ] )*
+			    }
+		    )?
 	    }
     ) => {
 	    $crate::enum_delegate_impls! {
@@ -22,11 +28,19 @@ macro_rules! enum_delegate_impls {
 		        $( $var_ident ),*
 		    }
 		    
-		    $(
-			    $trait_ident $( < [ $( $gens )* ] > )? {
-				    $( [ $( $item )* ] )*
-			    }
-		    )*
+		    DELEGATES: {
+			    $(
+				    trait $trait_ident $( < [ $( $gens )* ] > )? {
+					    $( [ $( $item )* ] )*
+				    }
+			    )*
+			    
+			    $(
+				    impl { 
+					    $( [ $( $std_impl )* ] )*
+				    }
+			    )?
+		    }
 	    }
     };
 	
@@ -34,12 +48,20 @@ macro_rules! enum_delegate_impls {
 	(@TRAITS_ENTRY
 		$enum_ident: ident 
 		$enum_vars: tt
+	
+		DELEGATES: {
+			$(
+				trait $trait_ident: ident $( < [ $( $gens: tt )* ] > )? {
+			        $( $item: tt )*
+		        }
+			)*
 		
-		$(
-			$trait_ident: ident $( < [ $( $gens: tt )* ] > )? {
-		        $( $item: tt )*
-	        }
-		)*
+			$(
+				impl { 
+					$( $std_impl: tt )*
+				}
+			)?
+		}
 	) => {
 		$(
 			impl $trait_ident for $enum_ident {
@@ -53,6 +75,19 @@ macro_rules! enum_delegate_impls {
 				)*
 			}
 		)*
+		
+		$(
+			impl $enum_ident {
+				$(
+					$crate::enum_delegate_impls! {
+						@TRAIT_ITEM
+						$enum_ident
+						$enum_vars
+						$std_impl
+					}
+				)*
+			}
+		)?
 	};
 	
 	//------------------------------------------------------------------------------------------------------------------
@@ -64,7 +99,7 @@ macro_rules! enum_delegate_impls {
 	
 		[
 		    $( [$( $fn_type: ident )*] )?
-		    fn $fn_ident: ident
+		    $fn_vis: vis fn $fn_ident: ident
 		    $( < [ $( $gens: tt )* ] > )?
 		    (self $(, $arg_ident: ident: $arg_ty: ty )*  $(,)? )
 		    $( -> $ret_ty: ty )?
@@ -80,7 +115,7 @@ macro_rules! enum_delegate_impls {
 		    
 		    [
 			    $( [$( $fn_type )*] )?
-			    fn $fn_ident
+			    $fn_vis fn $fn_ident
 			    $( < [ $( $gens )* ] > )?
 			    (self $(, $arg_ident: $arg_ty )* )
 			    $( -> $ret_ty )?
@@ -99,7 +134,7 @@ macro_rules! enum_delegate_impls {
 	
 		[
 		    $( [$( $fn_type: ident )*] )?
-		    fn $fn_ident: ident
+		    $fn_vis: vis fn $fn_ident: ident
 		    $( < [ $( $gens: tt )* ] > )?
 		    (&self $(, $arg_ident: ident: $arg_ty: ty )*  $(,)? )
 		    $( -> $ret_ty: ty )?
@@ -115,7 +150,7 @@ macro_rules! enum_delegate_impls {
 		    
 		    [
 			    $( [$( $fn_type )*] )?
-			    fn $fn_ident
+			    $fn_vis fn $fn_ident
 			    $( < [ $( $gens )* ] > )?
 			    (&self $(, $arg_ident: $arg_ty )* )
 			    $( -> $ret_ty )?
@@ -134,7 +169,7 @@ macro_rules! enum_delegate_impls {
 	
 		[
 		    $( [$( $fn_type: ident )*] )?
-		    fn $fn_ident: ident
+		    $fn_vis: vis fn $fn_ident: ident
 		    $( < [ $( $gens: tt )* ] > )?
 		    (&mut self $(, $arg_ident: ident: $arg_ty: ty )*  $(,)? )
 		    $( -> $ret_ty: ty )?
@@ -150,7 +185,7 @@ macro_rules! enum_delegate_impls {
 		    
 		    [
 			    $( [$( $fn_type )*] )?
-			    fn $fn_ident
+			    $fn_vis fn $fn_ident
 			    $( < [ $( $gens )* ] > )?
 			    (&mut self $(, $arg_ident: $arg_ty )* )
 			    $( -> $ret_ty )?
@@ -169,7 +204,7 @@ macro_rules! enum_delegate_impls {
 	
 		[
 		    $( [$( $fn_type: ident )*] )?
-		    fn $fn_ident: ident
+		    $fn_vis: vis fn $fn_ident: ident
 		    $( < [ $( $gens: tt )* ] > )?
 		    ( $( $arg_ident: ident: $arg_ty: ty ),*  $(,)? )
 		    $( -> $ret_ty: ty )?
@@ -178,7 +213,7 @@ macro_rules! enum_delegate_impls {
 		]
     ) => {
 	    $( $( $fn_type )* )?
-	    fn $fn_ident
+	    $fn_vis fn $fn_ident
 	    $( < $( $gens )* > )?
 	    ( $( $arg_ident: $arg_ty ),* )
 	    $( -> $ret_ty )?
@@ -212,7 +247,7 @@ macro_rules! enum_delegate_impls {
 	
 		[
 			$( [$( $fn_type: ident )*] )?
-		    fn $fn_ident: ident
+		    $fn_vis: vis fn $fn_ident: ident
 		    $( < [ $( $gens: tt )* ] > )?
 		    ( self $(, $arg_ident: ident: $arg_ty: ty )* )
 		    $( -> $ret_ty: ty )?
@@ -221,7 +256,7 @@ macro_rules! enum_delegate_impls {
 		$args: tt
     ) => {
 		$( [$( $fn_type )*] )?
-	    fn $fn_ident
+	    $fn_vis fn $fn_ident
 	    $( < [ $( $gens )* ] > )?
 	    ( self $(, $arg_ident: $arg_ty )* )
 	    $( -> $ret_ty )?
@@ -244,7 +279,7 @@ macro_rules! enum_delegate_impls {
 	
 		[
 			$( [$( $fn_type: ident )*] )?
-		    fn $fn_ident: ident
+		    $fn_vis: vis fn $fn_ident: ident
 		    $( < [ $( $gens: tt )* ] > )?
 		    ( &self $(, $arg_ident: ident: $arg_ty: ty )* )
 		    $( -> $ret_ty: ty )?
@@ -253,7 +288,7 @@ macro_rules! enum_delegate_impls {
 		$args: tt
     ) => {
 		$( [$( $fn_type )*] )?
-	    fn $fn_ident
+	    $fn_vis fn $fn_ident
 	    $( < [ $( $gens )* ] > )?
 	    ( &self $(, $arg_ident: $arg_ty )* )
 	    $( -> $ret_ty )?
@@ -276,7 +311,7 @@ macro_rules! enum_delegate_impls {
 	
 		[
 			$( [$( $fn_type: ident )*] )?
-		    fn $fn_ident: ident
+		    $fn_vis: vis fn $fn_ident: ident
 		    $( < [ $( $gens: tt )* ] > )?
 		    ( &mut self $(, $arg_ident: ident: $arg_ty: ty )* )
 		    $( -> $ret_ty: ty )?
@@ -285,7 +320,7 @@ macro_rules! enum_delegate_impls {
 		$args: tt
     ) => {
 		$( [$( $fn_type )*] )?
-	    fn $fn_ident
+	    $fn_vis fn $fn_ident
 	    $( < [ $( $gens )* ] > )?
 	    ( &mut self $(, $arg_ident: $arg_ty )* )
 	    $( -> $ret_ty )?
@@ -379,6 +414,204 @@ mod test {
 		}
 
 		fn test(&self) {
+			todo!()
+		}
+	}
+}
+
+#[allow(unused)]
+#[cfg(test)]
+mod test_2 {
+	#[derive(Clone, Debug)]
+	pub struct State<T: ?Sized>(T);
+
+	enum StateEnum {
+		Int(State<i32>),
+		UInt(State<u32>),
+	}
+
+	trait Tick {
+		fn tick(&mut self, delta_time: f64);
+
+		fn test(&self);
+	}
+
+
+	enum_delegate_impls! {
+		ENUM: {
+			StateEnum {
+				Int(State<i32>),
+				UInt(State<u32>),
+			}
+		}
+		
+		DELEGATES: {
+			impl {
+				[fn tick(&mut self, delta_time: f64)]
+				
+				[fn test(&self);]
+			}
+		}
+	}
+
+	fn test(x: &mut StateEnum) {
+		x.tick(2.0);
+	}
+
+	impl Tick for State<i32> {
+		fn tick(&mut self, delta_time: f64) {
+			todo!()
+		}
+
+		fn test(&self) {
+			todo!()
+		}
+	}
+
+	impl Tick for State<u32> {
+		fn tick(&mut self, delta_time: f64) {
+			todo!()
+		}
+
+		fn test(&self) {
+			todo!()
+		}
+	}
+}
+
+#[allow(unused)]
+#[cfg(test)]
+mod test_3 {
+	#[derive(Clone, Debug)]
+	pub struct State<T: ?Sized>(T);
+
+	enum StateEnum {
+		Int(State<i32>),
+		UInt(State<u32>),
+	}
+
+	enum_delegate_impls! {
+		ENUM: {
+			StateEnum {
+				Int(State<i32>),
+				UInt(State<u32>),
+			}
+		}
+		
+		DELEGATES: { 
+			impl { 
+				[fn tick(&mut self, delta_time: f64)]
+				[pub fn test(&self)]
+			}
+		}
+	}
+
+	fn test(x: &mut StateEnum) {
+		x.tick(2.0);
+	}
+
+	impl State<i32> {
+		fn tick(&mut self, delta_time: f64) {
+			todo!()
+		}
+
+		fn test(&self) {
+			todo!()
+		}
+	}
+
+	impl State<u32> {
+		fn tick(&mut self, delta_time: f64) {
+			todo!()
+		}
+
+		fn test(&self) {
+			todo!()
+		}
+	}
+}
+
+#[allow(unused)]
+#[cfg(test)]
+mod test_4 {
+	#[derive(Clone, Debug)]
+	pub struct State<T: ?Sized>(T);
+
+	enum StateEnum {
+		Int(State<i32>),
+		UInt(State<u32>),
+	}
+
+	trait Tick {
+		fn tick(&mut self, delta_time: f64);
+
+		fn test(&self);
+	}
+	
+	enum_delegate_impls! {
+		ENUM: {
+			StateEnum {
+				Int(State<i32>),
+				UInt(State<u32>),
+			}
+		}
+		
+		DELEGATES: { 
+			trait Tick {
+				[fn tick(&mut self, delta_time: f64)]
+				
+				[fn test(&self);]
+			}
+			
+			impl {
+				[pub fn other(&self) -> i64]
+				[pub(crate) fn and_so(&mut self)]
+			}
+		}
+	}
+
+	fn test(x: &mut StateEnum) {
+		x.tick(2.0);
+		x.other();
+		x.and_so();
+	}
+
+	impl Tick for State<i32> {
+		fn tick(&mut self, delta_time: f64) {
+			todo!()
+		}
+
+		fn test(&self) {
+			todo!()
+		}
+	}
+
+	impl Tick for State<u32> {
+		fn tick(&mut self, delta_time: f64) {
+			todo!()
+		}
+
+		fn test(&self) {
+			todo!()
+		}
+	}
+	
+	impl State<i32> {
+		fn other(&self) -> i64 {
+			todo!()
+		}
+		
+		fn and_so(&mut self) {
+			todo!()
+		}
+	}
+	
+	impl State<u32> {
+		fn other(&self) -> i64 {
+			todo!()
+		}
+		
+		fn and_so(&mut self) {
 			todo!()
 		}
 	}

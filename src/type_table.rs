@@ -114,10 +114,16 @@ macro_rules! type_table {
 		
 		DELEGATES: {
 		    $(
-		        $trait_vis: vis trait $trait_ident: ident $( < [ $( $gens: tt )* ] > )? {
+		        trait $trait_ident: ident $( < [ $( $gens: tt )* ] > )? {
 				    $( [ $( $item: tt )* ] )*
 			    }
 		    )*
+		    
+		    $(
+			    impl {
+			        $( [ $( $std_impl: tt )* ] )*
+			    }
+		    )?
 	    }
 	) => {
 		$crate::type_table! {
@@ -147,10 +153,16 @@ macro_rules! type_table {
 			
 			DELEGATES: {
 			    $(
-			        $trait_vis trait $trait_ident $( < [ $( $gens )* ] > )? {
+				    trait $trait_ident $( < [ $( $gens )* ] > )? {
 					    $( [ $( $item )* ] )*
 				    }
 			    )*
+			    
+			    $(
+				    impl { 
+					    $( [ $( $std_impl )* ] )*
+				    }
+			    )?
 		    }
 		}
 	};

@@ -11,10 +11,16 @@ macro_rules! delegated_enum {
 	    
 	    DELEGATES: {
 		    $(
-		        $trait_vis: vis trait $trait_ident: ident $( < [ $( $gens: tt )* ] > )? {
+		        trait $trait_ident: ident $( < [ $( $gens: tt )* ] > )? {
 				    $( [ $( $item: tt )* ] )*
 			    }
 		    )*
+		    
+		    $(
+			    impl {
+			        $( [ $( $std_impl: tt )* ] )*
+			    }
+		    )?
 	    }
     ) => {
 	    $( #[$enum_meta] )*
@@ -31,10 +37,16 @@ macro_rules! delegated_enum {
 		    
 		    DELEGATES: {
 			    $(
-			        $trait_vis trait $trait_ident $( < [ $( $gens )* ] > )? {
+			        trait $trait_ident $( < [ $( $gens )* ] > )? {
 					    $( [ $( $item )* ] )*
 				    }
 			    )*
+			    
+			    $(
+				    impl {
+					    $( [ $( $std_impl )* ] )*
+				    }
+			    )?   
 		    }
 	    }
     };

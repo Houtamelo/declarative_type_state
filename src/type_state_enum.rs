@@ -19,10 +19,16 @@ macro_rules! type_state_enum {
 	    
 	    DELEGATES: {
 		    $(
-		        $trait_vis: vis trait $trait_ident: ident $( < [ $( $gens: tt )* ] > )? {
-				    $( [ $( $trait_item: tt )* ] )*
+		        trait $trait_ident: ident $( < [ $( $gens: tt )* ] > )? {
+				    $( [ $( $item: tt )* ] )*
 			    }
 		    )*
+		    
+		    $(
+			    impl {
+			        $( [ $( $std_impl: tt )* ] )*
+			    }
+		    )?
 	    }
     ) => {
 	    $( #[$enum_meta] )*
@@ -90,13 +96,19 @@ macro_rules! type_state_enum {
 			    }
 		    }
 		    
-		    DELEGATES: { 
+		    DELEGATES: {
 			    $(
-			        $trait_vis trait $trait_ident $( < [ $( $gens )* ] > )? {
-					    $( [ $( $trait_item )* ] )*
+				    trait $trait_ident $( < [ $( $gens )* ] > )? {
+					    $( [ $( $item )* ] )*
 				    }
-		        )*
-			}
+			    )*
+			    
+			    $(
+				    impl { 
+					    $( [ $( $std_impl )* ] )*
+				    }
+			    )?
+		    }
 	    }
     };
 	
@@ -125,10 +137,16 @@ macro_rules! type_state_enum {
 		
 		DELEGATES: {
 		    $(
-		        $trait_vis: vis trait $trait_ident: ident $( < [ $( $gens: tt )* ] > )? {
+		        trait $trait_ident: ident $( < [ $( $gens: tt )* ] > )? {
 				    $( [ $( $item: tt )* ] )*
 			    }
 		    )*
+		    
+		    $(
+			    impl {
+			        $( [ $( $std_impl: tt )* ] )*
+			    }
+		    )?
 	    }
 	) => {
 		$( #[ $state_meta ] )*
@@ -154,10 +172,16 @@ macro_rules! type_state_enum {
 			
 			DELEGATES: {
 			    $(
-			        $trait_vis trait $trait_ident $( < [ $( $gens )* ] > )? {
+				    trait $trait_ident $( < [ $( $gens )* ] > )? {
 					    $( [ $( $item )* ] )*
 				    }
 			    )*
+			    
+			    $(
+				    impl { 
+					    $( [ $( $std_impl )* ] )*
+				    }
+			    )?
 		    }
 	    }
 	};
