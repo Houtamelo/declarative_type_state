@@ -1,5 +1,6 @@
 #![feature(try_trait_v2)]
 #![feature(type_changing_struct_update)]
+#![feature(macro_metavar_expr)]
 #![allow(clippy::tabs_in_doc_comments)]
 
 mod extract_variants_into_enum;
@@ -11,6 +12,7 @@ mod enum_delegate_impls;
 mod delegated_enum;
 mod extract_single_variant;
 mod extract_variants;
+mod enum_variants_table;
 
 mod transition_result;
 pub use transition_result::{Transition, Transition::Unchanged, Transition::ChangedTo};

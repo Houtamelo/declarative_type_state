@@ -5,7 +5,7 @@ macro_rules! type_state_enum {
     (
 	    STATE: $state_ident: ident { $state_field_ident: ident }
 
-	    ENUM: {
+	    ENUM_OUT: {
 		    #[vars( $( $all_meta: meta ),* $(,)? )]
 		    $( #[$enum_meta: meta] )*
 		    $enum_vis: vis enum $enum_ident: ident {
@@ -90,7 +90,7 @@ macro_rules! type_state_enum {
 		
 		    
 	    $crate::enum_delegate_impls! {
-		    ENUM: {
+		    ENUM_IN: {
 			    $enum_ident {
 			        $( $var_ident ),*
 			    }
@@ -123,7 +123,7 @@ macro_rules! type_state_enum {
 			}
 		}
 		
-		ENUM: {
+		ENUM_OUT: {
 		    #[vars( $( $all_meta: meta ),* $(,)? )]
 		    $( #[$enum_meta: meta] )*
 		    $enum_vis: vis enum $enum_ident: ident {
@@ -158,7 +158,7 @@ macro_rules! type_state_enum {
 		$crate::type_state_enum! {
 		    STATE: $state_ident { state }
 			
-			ENUM: {
+			ENUM_OUT: {
 			    #[vars( $( $all_meta ),* $(,)? )]
 			    $( #[$enum_meta] )*
 			    $enum_vis enum $enum_ident {
@@ -200,7 +200,7 @@ mod test {
 	type_state_enum! {
 		STATE: State { state }
 		
-		ENUM: {
+		ENUM_OUT: {
 			#[vars(derive(Clone, Debug))]
 			#[derive(Debug, Clone)]
 			pub enum StateEnum {

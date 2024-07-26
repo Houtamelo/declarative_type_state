@@ -1,7 +1,7 @@
 #[macro_export]
 macro_rules! delegated_enum {
     (
-	    ENUM: {
+	    ENUM_OUT: {
 		    $( #[$enum_meta: meta] )*
 		    $enum_vis: vis enum $enum_ident: ident {
 			    $( $var_ident: ident ($var_ty: ty) ),*
@@ -29,7 +29,7 @@ macro_rules! delegated_enum {
 	    }
 	    
 	    $crate::enum_delegate_impls! {
-		    ENUM: {
+		    ENUM_IN: {
 			    $enum_ident {
 					$( $var_ident ($var_ty) ),*
 		        }
@@ -66,7 +66,7 @@ mod test {
 
 
 	delegated_enum! {
-		ENUM: {
+		ENUM_OUT: {
 			#[derive(Clone, Debug)]
 			enum StateEnum {
 				Int(State<i32>),

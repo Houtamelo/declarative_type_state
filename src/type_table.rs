@@ -5,6 +5,7 @@
 ///
 /// # Usage
 /// ```
+/// #![feature(macro_metavar_expr)]
 /// mod table {
 /// 
 /// use declarative_type_state::type_table;
@@ -34,6 +35,7 @@
 /// # Example
 ///
 /// ```
+/// #![feature(macro_metavar_expr)]
 /// mod table {
 ///
 /// declarative_type_state::type_table! {
@@ -52,7 +54,7 @@ macro_rules! type_table {
 	//------------------------------------------------------------------------------------------------------------------
 	// Table + Generated enum
 	(
-		ENUM: {
+		ENUM_OUT: {
 		    #[vars( $( $all_meta: meta ),* $(,)? )]
 		    $( #[$enum_meta: meta] )*
 		    $enum_vis: vis enum $enum_ident: ident {
@@ -70,7 +72,7 @@ macro_rules! type_table {
 		}
 	) => {
 		$crate::type_table! {
-			ENUM: $enum_ident;
+			ENUM_IN: $enum_ident;
 			
 			TABLE: {
 				$( #[$table_meta] )*
@@ -93,9 +95,9 @@ macro_rules! type_table {
 	};
 	
 	//------------------------------------------------------------------------------------------------------------------
-	// Table + User enum + Delegates
+	// Table + Generated enum + Delegates
 	(
-		ENUM: {
+		ENUM_OUT: {
 		    #[vars( $( $all_meta: meta ),* $(,)? )]
 		    $( #[$enum_meta: meta] )*
 		    $enum_vis: vis enum $enum_ident: ident {
@@ -127,7 +129,7 @@ macro_rules! type_table {
 	    }
 	) => {
 		$crate::type_table! {
-			ENUM: {
+			ENUM_OUT: {
 			    #[vars( $( $all_meta ),* )]
 			    $( #[$enum_meta] )*
 			    $enum_vis enum $enum_ident {
@@ -145,7 +147,7 @@ macro_rules! type_table {
 		}
 		
 		$crate::enum_delegate_impls! {
-			ENUM: {
+			ENUM_IN: {
 				$enum_ident {
 					$( $var_ident ( $var_ident ) ),*
 			    }
@@ -170,7 +172,7 @@ macro_rules! type_table {
 	//------------------------------------------------------------------------------------------------------------------
 	// Table + User enum
 	(
-		ENUM: $enum_ident: ident $(;)? $({})?
+		ENUM_IN: $enum_ident: ident $(;)? $({})?
 		
 		TABLE: {
 			$( #[$table_meta: meta] )*
@@ -246,7 +248,7 @@ macro_rules! type_table {
 					#[allow(non_snake_case)]
 					pub fn new( $( $var_ident: super::$var_ident::Ty ),* ) -> Self {
 				        Self {
-				            $($var_ident),*
+				            $( $var_ident ),*
 				        }
 				    }
 				}
@@ -254,21 +256,7 @@ macro_rules! type_table {
 		}
 		
 		impl $table_ident {
-			#[doc(hidden)]
-			const fn ignore<T: ?Sized>() {}
-			
-			pub const LENGTH: usize = {
-		        let mut count = 0;
-		        $( 
-		            { 
-			            Self::ignore::<$var_ty>();
-		            }
-		            
-		            count += 1;
-		        )*
-		        
-		        count
-	        };
+			pub const LENGTH: usize = ${count($var_ident)};
 			
 			pub fn get<T: GetInTable>(&self) -> &T {
 			    T::get_in_table(self)
@@ -280,20 +268,12 @@ macro_rules! type_table {
 			
 			#[allow(clippy::needless_lifetimes)]
 			pub fn iter<'a>(&'a self) -> impl Iterator<Item = TypeRef<'a>> {
-				[
-					$(
-						TypeRef::$var_ident(&self.$var_ident)
-					),*
-				].into_iter()
+				[ $( TypeRef::$var_ident(&self.$var_ident) ),* ].into_iter()
 			}
 			
 			#[allow(clippy::needless_lifetimes)]
 			pub fn iter_mut<'a>(&'a mut self) -> impl Iterator<Item = TypeRefMut<'a>> {
-				[
-					$(
-						TypeRefMut::$var_ident(&mut self.$var_ident)
-					),*
-				].into_iter()
+				[ $( TypeRefMut::$var_ident(&mut self.$var_ident) ),* ].into_iter()
 			}
 		}
 		
@@ -322,7 +302,7 @@ mod tests {
 	use crate::type_table;
 
 	type_table! {
-		ENUM: {
+		ENUM_OUT: {
 			#[vars(derive(Debug, Clone))]
 			pub enum Duration {
 				Seconds(f64),
@@ -351,7 +331,7 @@ mod tests_2 {
 	use std::fmt::Formatter;
 
 	type_table! {
-		ENUM: {
+		ENUM_OUT: {
 			#[vars(derive(Debug, Clone))]
 			pub enum Duration {
 				Seconds(f64),

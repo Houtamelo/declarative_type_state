@@ -1,7 +1,7 @@
 #[macro_export]
 macro_rules! enum_delegate_impls {
     (
-	    ENUM: {
+	    ENUM_IN: {
 		    $enum_ident: ident {
 				$($var_ident: ident $( ( $($var_fields: tt)* ) )? ),*
 			    $(,)?
@@ -378,7 +378,7 @@ mod test {
 
 	
 	enum_delegate_impls! {
-		ENUM: {
+		ENUM_IN: {
 			StateEnum {
 				Int(State<i32>),
 				UInt(State<u32>),
@@ -438,7 +438,7 @@ mod test_2 {
 
 
 	enum_delegate_impls! {
-		ENUM: {
+		ENUM_IN: {
 			StateEnum {
 				Int(State<i32>),
 				UInt(State<u32>),
@@ -491,7 +491,7 @@ mod test_3 {
 	}
 
 	enum_delegate_impls! {
-		ENUM: {
+		ENUM_IN: {
 			StateEnum {
 				Int(State<i32>),
 				UInt(State<u32>),
@@ -549,7 +549,7 @@ mod test_4 {
 	}
 	
 	enum_delegate_impls! {
-		ENUM: {
+		ENUM_IN: {
 			StateEnum {
 				Int(State<i32>),
 				UInt(State<u32>),

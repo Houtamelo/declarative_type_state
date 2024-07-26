@@ -3,7 +3,7 @@ macro_rules! type_value_table {
 	//------------------------------------------------------------------------------------------------------------------
 	// Table + Generated enum
 	(
-		ENUM: {
+		ENUM_OUT: {
 		    #[vars( $( $all_meta: meta ),* $(,)? )]
 		    $( #[$enum_meta: meta] )*
 		    $enum_vis: vis enum $enum_ident: ident {
@@ -17,15 +17,15 @@ macro_rules! type_value_table {
 		
 		TABLE: {
 			$( #[$table_meta: meta] )*
-			$table_vis: vis struct $table_ident: ident <$T: ty> $(;)? $({})?
+			$table_vis: vis struct $table_ident: ident < $gen: ident > $(;)? $({})?
 		}
 	) => {
 		$crate::type_value_table! {
-			ENUM: $enum_ident;
+			ENUM_IN: $enum_ident;
 			
 			TABLE: {
 				$( #[$table_meta] )*
-				$table_vis struct $table_ident <$T> {
+				$table_vis struct $table_ident < $gen > {
 				    $( $var_ident ),*
 			    }
 			}
@@ -44,9 +44,9 @@ macro_rules! type_value_table {
 	};
 	
 	//------------------------------------------------------------------------------------------------------------------
-	// Table + User enum + Delegates
+	// Table + Generated enum + Delegates
 	(
-		ENUM: {
+		ENUM_OUT: {
 		    #[vars( $( $all_meta: meta ),* $(,)? )]
 		    $( #[$enum_meta: meta] )*
 		    $enum_vis: vis enum $enum_ident: ident {
@@ -60,7 +60,7 @@ macro_rules! type_value_table {
 		
 		TABLE: {
 			$( #[$table_meta: meta] )*
-			$table_vis: vis struct $table_ident: ident <$T: ty> $(;)? $({})?
+			$table_vis: vis struct $table_ident: ident < $gen: ident > $(;)? $({})?
 		}
 		
 		DELEGATES: {
@@ -78,7 +78,7 @@ macro_rules! type_value_table {
 	    }
 	) => {
 		$crate::type_value_table! {
-			ENUM: {
+			ENUM_OUT: {
 			    #[vars( $( $all_meta ),* )]
 			    $( #[$enum_meta] )*
 			    $enum_vis enum $enum_ident {
@@ -91,12 +91,12 @@ macro_rules! type_value_table {
 			
 			TABLE: {
 				$( #[$table_meta] )*
-				$table_vis struct $table_ident <$T>
+				$table_vis struct $table_ident< $gen >
 			}
 		}
 		
 		$crate::enum_delegate_impls! {
-			ENUM: {
+			ENUM_IN: {
 				$enum_ident {
 					$( $var_ident ( $var_ident ) ),*
 			    }
@@ -121,11 +121,11 @@ macro_rules! type_value_table {
 	//------------------------------------------------------------------------------------------------------------------
 	// Table + User enum
 	(
-		ENUM: $enum_ident: ident $(;)? $({})?
+		ENUM_IN: $enum_ident: ident $(;)? $({})?
 		
 		TABLE: {
 			$( #[$table_meta: meta] )*
-			$table_vis: vis struct $table_ident: ident <$T: ty> {
+			$table_vis: vis struct $table_ident: ident< $gen: ident > {
 			    $( $var_ident: ident ),*
 			    $(,)?
 		    }
@@ -133,18 +133,17 @@ macro_rules! type_value_table {
 	) => {
 		$crate::type_value_table! {
 			$( #[$table_meta] )*
-			$table_vis struct $table_ident <$T> {
+			$table_vis struct $table_ident< $gen > {
 			    $( $var_ident ),*
 		    }
 		}
 		
-		impl IntoIterator for $table_ident {
-		    type Item = $T;
-			type IntoIter = core::array::IntoIter<$T, { $table_ident::LENGTH }>;
+		impl< $gen > IntoIterator for $table_ident< $gen > {
+		    type Item = $gen;
+			type IntoIter = core::array::IntoIter< $gen, { TABLE_LENGTH }>;
 	
 			fn into_iter(self) -> Self::IntoIter {
-				[ $( self.$var_ident ),* ]
-				.into_iter()
+				[ $( self.$var_ident ),* ].into_iter()
 			}
 	    }
 	};
@@ -153,7 +152,7 @@ macro_rules! type_value_table {
 	// Base impl
 	(
 		$( #[$table_meta: meta] )*
-		$table_vis: vis struct $table_ident: ident <$T: ty> {
+		$table_vis: vis struct $table_ident: ident < $gen: ident > {
 		    $( $var_ident: ident ),*
 		    $(,)?
 	    }
@@ -161,93 +160,61 @@ macro_rules! type_value_table {
 		#[allow(non_camel_case_types)]
 		#[allow(non_snake_case)]
 		$( #[$table_meta] )*
-	    $table_vis struct $table_ident {
-	        $($var_ident: $T),*
+	    $table_vis struct $table_ident < $gen > {
+	        $( $var_ident: $gen ),*
 	    }
-		
-		#[allow(non_camel_case_types)]
-		$table_vis enum TypeRef<'a> {
-		    $($var_ident(&'a $T)),*
-	    }
-	    
-		#[allow(non_camel_case_types)]
-	    $table_vis enum TypeRefMut<'a> {
-		    $($var_ident(&'a mut $T)),*
-	    }
-		
-		#[doc(hidden)]
-		type _Inner = $T;
 		
 		#[doc(hidden)]
 		pub mod new_fn {
-			use super::{$table_ident, _Inner};
+			use super::$table_ident;
 			
-			impl $table_ident {
+			impl< $gen > $table_ident< $gen > {
 				#[allow(non_snake_case)]
-				pub fn new( $( $var_ident: _Inner ),* ) -> Self {
+				pub const fn new( $( $var_ident: $gen ),* ) -> Self {
 			        Self {
-			            $($var_ident),*
+			            $( $var_ident ),*
 			        }
 			    }
 			}
 		}
 		
-		impl $table_ident {
-			#[doc(hidden)]
-			const fn ignore<T: ?Sized>() {}
+		#[doc(hidden)]
+		const TABLE_LENGTH: usize = ${count($var_ident)};
+		
+		impl<$gen> $table_ident<$gen> {
+			pub const LENGTH: usize = TABLE_LENGTH;
 			
-			pub const LENGTH: usize = {
-		        let mut count = 0;
-		        $( 
-		            { 
-			            Self::ignore::<$var_ident>();
-		            }
-		            
-		            count += 1;
-		        )*
-		        
-		        count
-	        };
-			
-			pub fn get<T: GetInTable>(&self) -> & $T {
-			    T::get_in_table(self)
+			pub fn get<THash: GetInTable>(&self) -> & $gen {
+			    THash::get_in_table(self)
 		    }
 			    
-			pub fn get_mut<T: GetInTable>(&mut self) -> &mut $T {
-			    T::get_in_table_mut(self)
+			pub fn get_mut<THash: GetInTable>(&mut self) -> &mut $gen {
+			    THash::get_in_table_mut(self)
 		    }
 			
 			#[allow(clippy::needless_lifetimes)]
-			pub fn iter<'a>(&'a self) -> impl Iterator<Item = TypeRef<'a>> {
-				[
-					$(
-						TypeRef::$var_ident(&self.$var_ident)
-					),*
-				].into_iter()
+			pub fn iter<'a>(&'a self) -> impl Iterator<Item = &'a $gen> {
+				[$( &self.$var_ident ),* ].into_iter()
 			}
 			
 			#[allow(clippy::needless_lifetimes)]
-			pub fn iter_mut<'a>(&'a mut self) -> impl Iterator<Item = TypeRefMut<'a>> {
-				[
-					$(
-						TypeRefMut::$var_ident(&mut self.$var_ident)
-					),*
-				].into_iter()
+			pub fn iter_mut<'a>(&'a mut self) -> impl Iterator<Item = &'a mut $gen> {
+				[$( &mut self.$var_ident ),* ].into_iter()
 			}
 		}
 		
 		$table_vis trait GetInTable { 
-		    fn get_in_table(table: & $table_ident) -> & $T;
-	        fn get_in_table_mut(table: &mut $table_ident) -> &mut $T;
+		    fn get_in_table< $gen >(table: & $table_ident< $gen >) -> & $gen;
+	        fn get_in_table_mut< $gen >(table: &mut $table_ident< $gen >) -> &mut $gen;
 	    }
 		    
 	    $(
 		    impl GetInTable for $var_ident {
-	            fn get_in_table(table: & $table_ident) -> & $T {
+	            fn get_in_table< $gen >(table: & $table_ident<$gen>) -> & $gen {
 	                &table.$var_ident
 	            }
 		        
-	            fn get_in_table_mut(table: &mut $table_ident) -> &mut $T {
+	            fn get_in_table_mut< $gen >(table: &mut $table_ident<$gen>) -> &mut $gen {
 	                &mut table.$var_ident
 	            }
 	        }
@@ -261,7 +228,7 @@ mod tests {
 	use crate::type_value_table;
 
 	type_value_table! {
-		ENUM: {
+		ENUM_OUT: {
 			#[vars(derive(Debug, Clone))]
 			pub enum Duration {
 				Seconds(f64),
@@ -274,7 +241,7 @@ mod tests {
 		TABLE: { 
 			// Name of the module that will contain all the generated code
 			#[derive(Debug, Clone)] // Attributes to apply on the Table
-			pub struct DurationTable < i32 >
+			pub struct DurationTable < Val >
 		}
 	}
 }
@@ -291,7 +258,7 @@ mod tests_2 {
 	pub struct Sealed;
 
 	type_value_table! {
-		ENUM: {
+		ENUM_OUT: {
 			#[vars(derive(Debug, Clone))]
 			pub enum Duration {
 				Seconds(f64),
@@ -304,7 +271,7 @@ mod tests_2 {
 		TABLE: { 
 			// Name of the module that will contain all the generated code
 			#[derive(Debug, Clone)] // Attributes to apply on the Table
-			pub struct DurationTable <Sealed>
+			pub struct DurationTable < T >
 		}
 		
 		DELEGATES: {

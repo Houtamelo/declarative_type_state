@@ -66,6 +66,8 @@
 /// ```
 #[macro_export]
 macro_rules! extract_variants_into_enum {
+	//------------------------------------------------------------------------------------------------------------------
+	// Generated Enum
 	(
 		#[vars( $( $all_meta: meta ),* $(,)? )]
 		$( #[$enum_meta: meta] )*
@@ -100,8 +102,10 @@ macro_rules! extract_variants_into_enum {
 	    }
     };
 	
+	//------------------------------------------------------------------------------------------------------------------
+	// Generated Enum + Delegates
 	(
-		ENUM: {
+		ENUM_OUT: {
 			#[vars( $( $all_meta: meta ),* $(,)? )]
 			$( #[$enum_meta: meta] )*
 			$enum_vis: vis enum $enum_ident: ident {
@@ -139,7 +143,7 @@ macro_rules! extract_variants_into_enum {
 		}
 		
 		$crate::enum_delegate_impls! {
-			ENUM: {
+			ENUM_IN: {
 				$enum_vis enum $enum_ident {
 				    $( $var_ident ($var_ident) ),*
 			    }
