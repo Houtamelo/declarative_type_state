@@ -79,6 +79,7 @@ macro_rules! enum_variants_table {
 	        $( $var_ident: $gen ),*
 	    }
 		
+		#[allow(unused)]
 		macro_rules! table_from_const_fn {
 			( | $$var: ident | $$( -> $$ret: ty )? $$closure: block ) => {{
 				$table_ident {
@@ -98,28 +99,35 @@ macro_rules! enum_variants_table {
 			}};
 		}
 		
-		pub(crate) use table_from_const_fn;
+		#[allow(unused)]
+		macro_rules! table_filled {
+			( $$with: expr ) => {{
+				$table_ident {
+					$( $var_ident: $$with ),*
+				}
+			}};
+		}
 		
-		#[doc(hidden)]
-		type _Enum = $enum_ident;
+		pub(crate) use {table_from_const_fn, table_filled};
 		
-		#[doc(hidden)]
-		pub mod new_fn {
-			use super::{$table_ident, _Enum};
+		impl< $gen > $table_ident< $gen > {
+			#[allow(non_snake_case)]
+			pub const fn new( $( $var_ident: $gen ),* ) -> Self {
+		        Self {
+		            $( $var_ident ),*
+		        }
+		    }
 			
-			impl< $gen > $table_ident< $gen > {
-				#[allow(non_snake_case)]
-				pub const fn new( $( $var_ident: $gen ),* ) -> Self {
-			        Self {
-			            $( $var_ident ),*
-			        }
-			    }
-				
-				#[allow(non_snake_case)]
-				pub fn from_closure(f: impl Fn(_Enum) -> $gen) -> Self {
-					Self {
-						$( $var_ident: f(_Enum::$var_ident) ),*
-					}
+			pub fn filled(val: $gen) -> Self where $gen: Clone {
+				Self {
+					$( $var_ident: val.clone() ),*
+				}
+			}
+			
+			#[allow(non_snake_case)]
+			pub fn from_closure(f: impl Fn($enum_ident) -> $gen) -> Self {
+				Self {
+					$( $var_ident: f($enum_ident::$var_ident) ),*
 				}
 			}
 		}
@@ -181,6 +189,7 @@ macro_rules! enum_variants_table {
 #[allow(unused)]
 #[cfg(test)]
 mod tests {
+	use std::ops::{Range, RangeInclusive};
 	use crate::enum_variants_table;
 
 	enum_variants_table! {
@@ -203,5 +212,6 @@ mod tests {
 	
 	const fn test() {
 		let table: DurationTable<i32> = table_from_const_fn!(|v| -> i32 { v as i32 });
+		let table: DurationTable<RangeInclusive<i32>> = table_filled!(5..=6);
 	}
 }
