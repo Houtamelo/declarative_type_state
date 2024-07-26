@@ -246,7 +246,7 @@ macro_rules! type_table {
 				
 				impl $table_ident {
 					#[allow(non_snake_case)]
-					pub fn new( $( $var_ident: super::$var_ident::Ty ),* ) -> Self {
+					pub const fn new( $( $var_ident: super::$var_ident::Ty ),* ) -> Self {
 				        Self {
 				            $( $var_ident ),*
 				        }

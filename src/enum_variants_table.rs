@@ -161,6 +161,20 @@ macro_rules! enum_variants_table {
 				[ $( ($enum_ident::$var_ident, self.$var_ident) ),* ].into_iter()
 			}
 	    }
+		
+		impl< $gen > std::ops::Index<$enum_ident> for $table_ident< $gen > {
+			type Output = $gen;
+			
+			fn index(&self, index: $enum_ident) -> &Self::Output {
+				self.get(index)
+			}
+		}
+		
+		impl< $gen > std::ops::IndexMut<$enum_ident> for $table_ident< $gen > {
+			fn index_mut(&mut self, index: $enum_ident) -> &mut Self::Output {
+				self.get_mut(index)
+			}
+		}
 	};
 }
 
@@ -188,6 +202,6 @@ mod tests {
 	}
 	
 	const fn test() {
-		let table = table_from_const_fn!(|v| -> i32 { v as i32 });
+		let table: DurationTable<i32> = table_from_const_fn!(|v| -> i32 { v as i32 });
 	}
 }
