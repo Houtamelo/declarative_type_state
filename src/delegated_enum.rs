@@ -28,6 +28,12 @@ macro_rules! delegated_enum {
 		    $( $var_ident ($var_ty) ),*
 	    }
 	    
+	    $crate::enum_variants_convert! {
+		    $enum_vis enum $enum_ident {
+			    $( $var_ident ($var_ty) ),*
+		    }
+	    }
+	    
 	    $crate::enum_delegate_impls! {
 		    ENUM_IN: {
 			    $enum_ident {
