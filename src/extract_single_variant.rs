@@ -44,4 +44,40 @@ macro_rules! extract_single_variant {
 		$( #[$var_meta] )*
 		$var_vis struct $var_ident;
 	};
+	
+	//------------------------------------------------------------------------------------------------------------------
+	// Ignored Tuple
+    (
+		{ $( #[$all_meta: meta] )* }
+		[@SKIP]
+		$( #[$var_meta: meta] )*
+		$var_vis: vis $var_ident: ident ( 
+			$( $field_ty: ty ),* 
+			$(,)? 
+		)
+	) => {
+	};
+	
+	//------------------------------------------------------------------------------------------------------------------
+	// Ignored Struct
+	(
+		{ $( #[$all_meta: meta] )* }
+		[@SKIP]
+		$( #[$var_meta: meta] )*
+		$var_vis: vis $var_ident: ident {
+			$( $field_name: ident : $field_ty: ty ),*
+			$(,)?
+		}
+	) => {
+	};
+	
+	//------------------------------------------------------------------------------------------------------------------
+	// Ignored Unit
+	(
+		{ $( #[$all_meta: meta] )* }
+		[@SKIP]
+		$( #[$var_meta: meta] )*
+		$var_vis: vis $var_ident: ident
+	) => {
+	};
 }

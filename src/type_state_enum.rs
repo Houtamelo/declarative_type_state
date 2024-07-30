@@ -10,6 +10,7 @@ macro_rules! type_state_enum {
 		    $( #[$enum_meta: meta] )*
 		    $enum_vis: vis enum $enum_ident: ident {
 				$(
+					$( [@ $ignore: ident] )?
 					$( #[$var_meta: meta] )*
 					$var_ident: ident $( ( $($var_tuple: tt)* ) )? $( { $($var_fields: tt)* } )?
 			    ),*
@@ -76,6 +77,7 @@ macro_rules! type_state_enum {
 		    $( #[$enum_meta] )*
 			$enum_vis enum $enum_ident {
 			    $(
+			        $( [@ $ignore] )?
 			        $( #[$var_meta] )*
 			        $var_ident $( ( $($var_tuple)* ) )? $( { $($var_fields)* } )?,
 			    )*
@@ -128,6 +130,7 @@ macro_rules! type_state_enum {
 		    $( #[$enum_meta: meta] )*
 		    $enum_vis: vis enum $enum_ident: ident {
 				$(
+					$( [@ $ignore: ident] )?
 					$( #[$var_meta: meta] )*
 					$var_ident: ident $( ( $($var_tuple: tt)* ) )? $( { $($var_fields: tt)* } )?
 			    ),*
@@ -163,6 +166,7 @@ macro_rules! type_state_enum {
 			    $( #[$enum_meta] )*
 			    $enum_vis enum $enum_ident {
 					$(
+						$( [@ $ignore] )?
 						$( #[$var_meta] )*
 						$var_ident: $( ( $($var_tuple)* ) )? $( { $($var_fields)* } )?
 				    ),*
@@ -189,6 +193,7 @@ macro_rules! type_state_enum {
 
 #[cfg(test)]
 #[allow(unused)]
+#[allow(non_camel_case_types)]
 mod test {
 	use crate::transition_result::Transition;
 
@@ -196,6 +201,9 @@ mod test {
 	pub struct State<T: ?Sized> {
 		state: T,
 	}
+
+	#[derive(Debug, Clone)]
+	pub struct CustomType;
 
 	type_state_enum! {
 		STATE: State { state }
@@ -211,7 +219,8 @@ mod test {
 					 y: i32,
 				 },
 				 Float(f32, i32),
-				 Bool(bool),
+				 [@SKIP]
+				 CustomType,
 				 Unit,
 			}
 		}
@@ -249,7 +258,7 @@ mod test {
 		}
 	}
 	
-	impl Tick for State<Bool> {
+	impl Tick for State<CustomType> {
 		fn tick(&mut self, delta_time: f64) {
 			todo!()
 		}
