@@ -65,7 +65,10 @@ macro_rules! type_value_table {
 		
 		DELEGATES: {
 		    $(
-		        trait $trait_ident: ident $( < [ $( $gens: tt )* ] > )? {
+		        impl $( <[ $( $trait_gen: tt )*  ]> )? 
+		        trait $trait_ty: path
+		        $( [where $( $trait_bound: tt )* ] )?
+		        {
 				    $( [ $( $item: tt )* ] )*
 			    }
 		    )*
@@ -104,7 +107,10 @@ macro_rules! type_value_table {
 			
 			DELEGATES: {
 			    $(
-				    trait $trait_ident $( < [ $( $gens )* ] > )? {
+			        impl $( <[ $( $trait_gen )*  ]> )? 
+				    trait $trait_ty
+			        $( [where $( $trait_bound )* ] )?
+			        {
 					    $( [ $( $item )* ] )*
 				    }
 			    )*
@@ -275,7 +281,7 @@ mod tests_2 {
 		}
 		
 		DELEGATES: {
-			trait Debug {
+			impl trait Debug {
 				[fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error>]
 			}
 		}

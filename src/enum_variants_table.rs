@@ -5,10 +5,13 @@ macro_rules! enum_variants_table {
 	(
 		ENUM_OUT: {
 		    $( #[$enum_meta: meta] )*
-		    $enum_vis: vis enum $enum_ident: ident {
+		    $enum_vis: vis enum $enum_ident: ident
+		    $( <[ $( $enum_gen: tt )* ]> )?
+			$( [where $( $enum_bound: tt )* ] )?
+		    {
 				$(
 					$( #[$var_meta: meta] )*
-					$var_ident: ident $( = $var_int: literal )?
+					$var_ident: ident $( = $var_int: expr )?
 			    ),*
 			    $(,)?
 		    }
@@ -16,7 +19,8 @@ macro_rules! enum_variants_table {
 		
 		TABLE: {
 			$( #[$table_meta: meta] )*
-			$table_vis: vis struct $table_ident: ident < $gen: ident > $(;)? $({})?
+			$table_vis: vis struct $table_ident: ident 
+			< $gen: ident > $(;)? $({})?
 		}
 	) => {
 		$crate::enum_variants_table! {
@@ -42,11 +46,13 @@ macro_rules! enum_variants_table {
 	//------------------------------------------------------------------------------------------------------------------
 	// Table + User enum
 	(
-		ENUM_IN: $enum_ident: ident $(;)? $({})?
+		ENUM_IN: $enum_ident: path;
 		
 		TABLE: {
 			$( #[$table_meta: meta] )*
-			$table_vis: vis struct $table_ident: ident< $gen: ident > {
+			$table_vis: vis struct $table_ident: ident
+			< $gen: ident >
+			{
 			    $( $var_ident: ident ),*
 			    $(,)?
 		    }
@@ -65,7 +71,7 @@ macro_rules! enum_variants_table {
 	//------------------------------------------------------------------------------------------------------------------
 	// Base impl
 	(
-		$enum_ident: ident {
+		$enum_ident: path {
 			$( $var_ident: ident ),*
 		}
 		
@@ -85,7 +91,7 @@ macro_rules! enum_variants_table {
 				$table_ident {
 					$( 
 						$var_ident: { 
-							let $$var = $enum_ident::$var_ident;
+							let $$var = <$enum_ident>::$var_ident;
 							$$closure
 						} 
 					),*
@@ -127,7 +133,7 @@ macro_rules! enum_variants_table {
 			#[allow(non_snake_case)]
 			pub fn from_closure(f: impl Fn($enum_ident) -> $gen) -> Self {
 				Self {
-					$( $var_ident: f($enum_ident::$var_ident) ),*
+					$( $var_ident: f(<$enum_ident>::$var_ident) ),*
 				}
 			}
 		}
@@ -140,24 +146,24 @@ macro_rules! enum_variants_table {
 			
 			pub const fn get(&self, var: $enum_ident) -> & $gen {
 			    match var {
-			        $( $enum_ident::$var_ident => &self.$var_ident ),*    
+			        $( <$enum_ident>::$var_ident => &self.$var_ident ),*    
 			    }
 		    }
 			    
 			pub fn get_mut(&mut self, var: $enum_ident) -> &mut $gen {
 			    match var {
-			        $( $enum_ident::$var_ident => &mut self.$var_ident ),*    
+			        $( <$enum_ident>::$var_ident => &mut self.$var_ident ),*    
 			    }
 		    }
 			
 			#[allow(clippy::needless_lifetimes)]
 			pub fn iter<'a>(&'a self) -> impl Iterator<Item = ($enum_ident, &'a $gen)> {
-				[$( ($enum_ident::$var_ident, &self.$var_ident) ),* ].into_iter()
+				[$( (<$enum_ident>::$var_ident, &self.$var_ident) ),* ].into_iter()
 			}
 			
 			#[allow(clippy::needless_lifetimes)]
 			pub fn iter_mut<'a>(&'a mut self) -> impl Iterator<Item = ($enum_ident, &'a mut $gen)> {
-				[$( ($enum_ident::$var_ident, &mut self.$var_ident) ),* ].into_iter()
+				[$( (<$enum_ident>::$var_ident, &mut self.$var_ident) ),* ].into_iter()
 			}
 		}
 		
@@ -166,7 +172,7 @@ macro_rules! enum_variants_table {
 			type IntoIter = core::array::IntoIter< ($enum_ident, $gen), { TABLE_LENGTH }>;
 	
 			fn into_iter(self) -> Self::IntoIter {
-				[ $( ($enum_ident::$var_ident, self.$var_ident) ),* ].into_iter()
+				[ $( (<$enum_ident>::$var_ident, self.$var_ident) ),* ].into_iter()
 			}
 	    }
 		

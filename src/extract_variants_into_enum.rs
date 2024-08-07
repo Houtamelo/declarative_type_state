@@ -71,33 +71,59 @@ macro_rules! extract_variants_into_enum {
 	(
 		#[vars( $( $all_meta: meta ),* $(,)? )]
 		$( #[$enum_meta: meta] )*
-		$enum_vis: vis enum $enum_ident: ident {
+		$enum_vis: vis enum $enum_ident: ident
+		$( <[ $( $enum_gen: tt )* ]> )?
+		$( [where $( $enum_bound: tt )* ] )?
+		{
 		    $(
+		        $( [@ $ignore: ident] )?
 		        $( #[$var_meta: meta] )*
-		        $var_ident: ident $( ( $($var_tuple: tt)* ) )? $( { $($var_fields: tt)* } )?
+		        $var_ident: ident 
+		        $( <[ $( $var_gen: tt )* ]> )?
+		        $( ( $($var_tuple: tt)* ) )? 
+		        $( { $($var_fields: tt)* } )?
+		        $( [where $( $var_bound: tt )* ] )?
 		    ),*
 		    $(,)?
 	    }
     ) => {
 		$( #[$enum_meta] )*
-	    $enum_vis enum $enum_ident {
-		    $( $var_ident ($var_ident) ),*
+	    $enum_vis enum $enum_ident 
+		$( <$( $enum_gen )* > )?
+		$( where $( $enum_bound )* )?
+		{
+		    $( 
+		        $var_ident( 
+			        $var_ident $( <$( $var_gen )*> )? 
+		        ) 
+		    ),*
 	    }
 		
 		$crate::extract_variants! {
 			#[vars( $( $all_meta ),* )]
-		    $( #[$enum_meta] )* 
-		    $enum_vis enum $enum_ident {
+		    $( #[$enum_meta] )*
+		    $enum_vis enum $enum_ident
+			$( <[ $( $enum_gen )* ]> )?
+			$( [where $( $enum_bound )* ] )?
+			{
 			    $(
+			        $( [@ $ignore ] )?
 			        $( #[$var_meta] )*
-			        $var_ident $( ( $($var_tuple)* ) )? $( { $($var_fields)* } )?
+			        $var_ident 
+			        $( <[ $( $var_gen )* ]> )?
+			        $( ( $( $var_tuple )* ) )? 
+			        $( { $( $var_fields )* } )?
+			        $( [where $( $var_bound )* ] )?
 			    ),*
 		    }
 		}
 		
 		$crate::enum_variants_convert! {
-		    $enum_vis enum $enum_ident {
-			    $( $var_ident ($var_ident) ),*
+		    $enum_vis enum $enum_ident
+		    $( <[ $( $enum_gen )* ]> )?
+			$( [where $( $enum_bound )* ] )?
+		    {
+			    $( $var_ident ( $var_ident $( <$( $var_gen )*> )? ) ),*
 		    }
 	    }
     };
@@ -108,10 +134,18 @@ macro_rules! extract_variants_into_enum {
 		ENUM_OUT: {
 			#[vars( $( $all_meta: meta ),* $(,)? )]
 			$( #[$enum_meta: meta] )*
-			$enum_vis: vis enum $enum_ident: ident {
+			$enum_vis: vis enum $enum_ident: ident
+			$( <[ $( $enum_gen: tt )* ]> )?
+			$( [where $( $enum_bound: tt )* ] )?
+			{
 			    $(
+			        $( [@ $ignore: ident] )?
 			        $( #[$var_meta: meta] )*
-			        $var_ident: ident $( ( $($var_tuple: tt)* ) )? $( { $($var_fields: tt)* } )?
+			        $var_ident: ident 
+			        $( <[ $( $var_gen: tt )* ]> )?
+			        $( ( $($var_tuple: tt)* ) )? 
+			        $( { $($var_fields: tt)* } )?
+			        $( [where $( $var_bound: tt )* ] )?
 			    ),*
 			    $(,)?
 		    }
@@ -119,7 +153,10 @@ macro_rules! extract_variants_into_enum {
 		
 		DELEGATES: {
 		    $(
-		        trait $trait_ident: ident $( < [ $( $gens: tt )* ] > )? {
+		        impl $( <[ $( $trait_gen: tt )*  ]> )? 
+		        trait $trait_ty: path
+		        $( [where $( $trait_bound: tt )* ] )?
+		        {
 				    $( [ $( $item: tt )* ] )*
 			    }
 		    )*
@@ -132,26 +169,40 @@ macro_rules! extract_variants_into_enum {
 	    }
     ) => {
 		$crate::extract_variants_into_enum! {
-			#[vars( $( $all_meta ),* $(,)? )]
+			#[vars( $( $all_meta ),* )]
 			$( #[$enum_meta] )*
-			$enum_vis enum $enum_ident {
+			$enum_vis enum $enum_ident
+			$( <[ $( $enum_gen )* ]> )?
+			$( [where $( $enum_bound )* ] )?
+			{
 			    $(
+			        $( [@ $ignore ] )?
 			        $( #[$var_meta] )*
-			        $var_ident $( ( $($var_tuple)* ) )? $( { $($var_fields)* } )?
+			        $var_ident 
+			        $( <[ $( $var_gen )* ]> )?
+			        $( ( $( $var_tuple )* ) )? 
+			        $( { $( $var_fields )* } )?
+			        $( [where $( $var_bound )* ] )?
 			    ),*
 		    }
 		}
 		
 		$crate::enum_delegate_impls! {
 			ENUM_IN: {
-				$enum_vis enum $enum_ident {
-				    $( $var_ident ($var_ident) ),*
+				$enum_ident
+				$( <[ $( $enum_gen )* ]> )?
+				$( [where $( $enum_bound )* ] )?
+				{
+				    $( $var_ident ( $var_ident $( <$( $var_gen )*> )? ) ),*
 			    }
 			}
 			
 			DELEGATES: {
 			    $(
-				    trait $trait_ident $( < [ $( $gens )* ] > )? {
+			        impl $( <[ $( $trait_gen )*  ]> )? 
+				    trait $trait_ty
+			        $( [where $( $trait_bound )* ] )?
+			        {
 					    $( [ $( $item )* ] )*
 				    }
 			    )*
@@ -164,4 +215,190 @@ macro_rules! extract_variants_into_enum {
 		    }
 		}
     };
+}
+
+#[allow(unused)]
+#[cfg(test)]
+mod tests {
+	use crate::extract_variants_into_enum;
+
+	#[derive(Debug)]
+	pub struct Bool(bool);
+
+	extract_variants_into_enum! {
+		#[vars(derive(Debug, Clone))] // REQUIRED: Attributes to apply on all variants
+		#[derive(Debug)]              // IGNORED - OPTIONAL
+		pub enum Num {                // Enum name: IGNORED - OPTIONAL
+			#[derive(PartialEq)]      // OPTIONAL
+			Int { field: i32 },      
+			UInt { x: i32, y: i32 },
+			Float(f32, i32),
+			[@SKIP]
+			Bool(bool),
+			Test,
+		}
+	}
+}
+
+#[allow(unused)]
+#[cfg(test)]
+mod test_generics {
+	use crate::extract_variants_into_enum;
+
+	#[derive(Debug)]
+	pub struct Bool(bool);
+	
+	extract_variants_into_enum! {
+		#[vars(derive(Debug, Clone))]
+		#[derive(Debug)]
+		pub enum Num<['a, T]> [where T: Clone] {
+			#[derive(PartialEq)]
+			Int <['a, T]> { field: &'a T } [where T: Clone],
+			UInt { x: i32, y: i32 },
+			Float(f32, i32),
+			[@SKIP]
+			Bool(bool),
+			Test,
+		}
+	}
+}
+
+#[allow(unused)]
+#[cfg(test)]
+mod test_generics_with_delegates {
+	use crate::extract_variants_into_enum;
+
+	#[derive(Debug)]
+	pub struct Bool(bool);
+
+	extract_variants_into_enum! {
+		ENUM_OUT: { 
+			#[vars(derive(Debug, Clone))]
+			#[derive(Debug)]
+			pub enum Num<['a, T]> [where T: Clone] {
+				#[derive(PartialEq)]
+				Int <['a, T]> { field: &'a T } [where T: Clone],
+				UInt { x: i32, y: i32 },
+				Float(f32, i32),
+				[@SKIP]
+				Bool(bool),
+				Test,
+			}
+		}
+		
+		DELEGATES: {
+			impl<['a, T]> trait MyTrait [where T: Clone] {
+				[fn print(&self)]
+			}
+		}
+	}
+	
+	trait MyTrait {
+		fn print(&self);
+	}
+
+	impl<'a, T: Clone> MyTrait for Int<'a, T> {
+		fn print(&self) {
+			todo!()
+		}
+	}
+	
+	impl MyTrait for UInt {
+		fn print(&self) {
+			todo!()
+		}
+	}
+
+	impl MyTrait for Float {
+		fn print(&self) {
+			todo!()
+		}
+	}
+
+	impl MyTrait for Bool {
+		fn print(&self) {
+			todo!()
+		}
+	}
+
+	impl MyTrait for Test {
+		fn print(&self) {
+			todo!()
+		}
+	}
+
+	#[allow(clippy::needless_lifetimes)]
+	fn test<'a, T: Clone>(input: Num<'a, T>) {
+		input.print();
+	}
+}
+
+#[allow(unused)]
+#[cfg(test)]
+mod test_generics_with_delegates_trait_generics {
+	use crate::extract_variants_into_enum;
+
+	#[derive(Debug)]
+	pub struct Bool(bool);
+
+	extract_variants_into_enum! {
+		ENUM_OUT: { 
+			#[vars(derive(Debug, Clone))]
+			#[derive(Debug)]
+			pub enum Num<['a, T]> [where T: Clone] {
+				#[derive(PartialEq)]
+				Int <['a, T]> { field: &'a T } [where T: Clone],
+				UInt { x: i32, y: i32 },
+				Float(f32, i32),
+				[@SKIP]
+				Bool(bool),
+				Test,
+			}
+		}
+		
+		DELEGATES: {
+			impl<['a, T, G]> trait MyTrait<G> [where T: Clone] {
+				[fn print(&self, d: G)]
+			}
+		}
+	}
+
+	trait MyTrait<G> {
+		fn print(&self, d: G);
+	}
+
+	impl<'a, T: Clone, G> MyTrait<G> for Int<'a, T> {
+		fn print(&self, d: G) {
+			todo!()
+		}
+	}
+
+	impl<G> MyTrait<G> for UInt {
+		fn print(&self, d: G) {
+			todo!()
+		}
+	}
+
+	impl<G> MyTrait<G> for Float {
+		fn print(&self, d: G) {
+			todo!()
+		}
+	}
+
+	impl<G> MyTrait<G> for Bool {
+		fn print(&self, d: G) {
+			todo!()
+		}
+	}
+
+	impl<G> MyTrait<G> for Test {
+		fn print(&self, d: G) {
+			todo!()
+		}
+	}
+
+	#[allow(clippy::needless_lifetimes)]
+	fn test<'a, T: Clone>(input: Num<'a, T>) {
+		input.print(0.0);
+	}
 }

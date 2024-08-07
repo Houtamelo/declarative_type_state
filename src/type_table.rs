@@ -116,7 +116,10 @@ macro_rules! type_table {
 		
 		DELEGATES: {
 		    $(
-		        trait $trait_ident: ident $( < [ $( $gens: tt )* ] > )? {
+		        impl $( <[ $( $trait_gen: tt )*  ]> )? 
+		        trait $trait_ty: path
+		        $( [where $( $trait_bound: tt )* ] )?
+		        {
 				    $( [ $( $item: tt )* ] )*
 			    }
 		    )*
@@ -155,7 +158,10 @@ macro_rules! type_table {
 			
 			DELEGATES: {
 			    $(
-				    trait $trait_ident $( < [ $( $gens )* ] > )? {
+			        impl $( <[ $( $trait_gen )*  ]> )? 
+				    trait $trait_ty
+			        $( [where $( $trait_bound )* ] )?
+			        {
 					    $( [ $( $item )* ] )*
 				    }
 			    )*
@@ -312,9 +318,8 @@ mod tests {
 			}
 		}
 		
-		TABLE: { 
-			// Name of the module that will contain all the generated code
-			#[derive(Debug, Clone)] // Attributes to apply on the Table
+		TABLE: {
+			#[derive(Debug, Clone)]
 			pub struct DurationTable;
 		}
 	}
@@ -341,14 +346,13 @@ mod tests_2 {
 			}
 		}
 		
-		TABLE: { 
-			// Name of the module that will contain all the generated code
-			#[derive(Debug, Clone)] // Attributes to apply on the Table
+		TABLE: {
+			#[derive(Debug, Clone)]
 			pub struct DurationTable;
 		}
 		
 		DELEGATES: {
-			trait Debug {
+			impl trait Debug {
 				[fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error>]
 			}
 		}

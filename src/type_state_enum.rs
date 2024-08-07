@@ -20,7 +20,10 @@ macro_rules! type_state_enum {
 	    
 	    DELEGATES: {
 		    $(
-		        trait $trait_ident: ident $( < [ $( $gens: tt )* ] > )? {
+		        impl $( <[ $( $trait_gen: tt )*  ]> )? 
+		        trait $trait_ty: path
+		        $( [where $( $trait_bound: tt )* ] )?
+		        {
 				    $( [ $( $item: tt )* ] )*
 			    }
 		    )*
@@ -94,13 +97,16 @@ macro_rules! type_state_enum {
 	    $crate::enum_delegate_impls! {
 		    ENUM_IN: {
 			    $enum_ident {
-			        $( $var_ident ),*
+			        $( $var_ident ( $state_ident<$var_ident> ) ),*
 			    }
 		    }
 		    
 		    DELEGATES: {
 			    $(
-				    trait $trait_ident $( < [ $( $gens )* ] > )? {
+			        impl $( <[ $( $trait_gen )*  ]> )? 
+				    trait $trait_ty
+			        $( [where $( $trait_bound )* ] )?
+			        {
 					    $( [ $( $item )* ] )*
 				    }
 			    )*
@@ -140,7 +146,10 @@ macro_rules! type_state_enum {
 		
 		DELEGATES: {
 		    $(
-		        trait $trait_ident: ident $( < [ $( $gens: tt )* ] > )? {
+		        impl $( <[ $( $trait_gen: tt )*  ]> )? 
+		        trait $trait_ty: path
+		        $( [where $( $trait_bound: tt )* ] )?
+		        {
 				    $( [ $( $item: tt )* ] )*
 			    }
 		    )*
@@ -176,7 +185,10 @@ macro_rules! type_state_enum {
 			
 			DELEGATES: {
 			    $(
-				    trait $trait_ident $( < [ $( $gens )* ] > )? {
+			        impl $( <[ $( $trait_gen )*  ]> )? 
+				    trait $trait_ty
+			        $( [where $( $trait_bound )* ] )?
+			        {
 					    $( [ $( $item )* ] )*
 				    }
 			    )*
@@ -226,7 +238,7 @@ mod test {
 		}
 		
 		DELEGATES: { 
-			trait Tick {
+			impl trait Tick {
 				[fn tick(&mut self, delta_time: f64);]
 			}
 		}

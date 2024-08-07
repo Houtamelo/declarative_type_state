@@ -130,37 +130,52 @@ macro_rules! extract_variants {
     (
 	    #[vars( $( $all_meta: meta ),* $(,)? )]
 		$( #[$enum_meta: meta] )*
-		$enum_vis: vis enum $enum_ident: ident {
+		$enum_vis: vis enum $enum_ident: ident
+	    $( <[ $( $generic: tt )* ]> )?  // Ignored
+		$( [where $( $bound: tt )* ] )? // Ignored
+	    {
 		    $(
 		        $( [@ $ignore: ident] )?
 		        $( #[$var_meta: meta] )*
-		        $var_ident: ident $( ( $($var_tuple: tt)* ) )? $( { $($var_fields: tt)* } )?
+		        $var_ident: ident
+		        $( <[ $( $var_gen: tt )* ]> )?
+		        $( ( $($var_tuple: tt)* ) )? 
+		        $( { $($var_fields: tt)* } )?
+		        $( [where $( $var_bound: tt )* ] )?
 		    ),*
 		    $(,)?
 	    }
     ) => {
 	    $crate::extract_variants! {
-		    @TOKENIZE_ALL_METAS 
+		    @TOKENIZE 
 		    { $( #[$all_meta] )* }
 		    $( #[$enum_meta] )*
 		    $enum_vis enum $enum_ident {
 		        $(
 		            $( [@ $ignore] )?
 		            $( #[$var_meta] )*
-		            $var_ident $( ( $($var_tuple)* ) )? $( { $($var_fields)* } )?
+		            $var_ident
+		            <[ $( $( $var_gen )* )? ]>
+		            $( ( $( $var_tuple )* ) )? 
+		            $( { $( $var_fields )* } )?
+		            [ $( $( $var_bound )* )? ]
 		        ),*
 		    }
 	    }
     };
 	
-	(@TOKENIZE_ALL_METAS
+	(@TOKENIZE
 		$all_meta_tt: tt
 		$( #[$enum_meta: meta] )*
 		$enum_vis: vis enum $enum_ident: ident {
 		    $(
 		        $( [@ $ignore: ident] )?
 		        $( #[$var_meta: meta] )*
-		        $var_ident: ident $( ( $($var_tuple: tt)* ) )? $( { $($var_fields: tt)* } )?
+		        $var_ident: ident 
+		        <[ $( $var_gen: tt )* ]>
+		        $( ( $($var_tuple: tt)* ) )? 
+		        $( { $($var_fields: tt)* } )?
+		        [ $( $var_bound: tt )* ]
 		    ),*
 	    }
 	) => {
@@ -169,7 +184,12 @@ macro_rules! extract_variants {
 				$all_meta_tt
 				$( [@ $ignore] )?
 				$( #[$var_meta] )*
-		        $enum_vis $var_ident $( ( $($var_tuple)* ) )? $( { $($var_fields)* } )?
+		        $enum_vis 
+				$var_ident 
+				{ $( $var_gen )* }
+				$( ( $($var_tuple)* ) )? 
+				$( { $($var_fields)* } )?
+				{ $( $var_bound )* }
 			}
 		)*
 	};
@@ -187,6 +207,26 @@ mod tests {
 		pub enum Num {                // Enum name: IGNORED - OPTIONAL
 			#[derive(PartialEq)]      // OPTIONAL
 			Int { field: i32 },      
+			UInt { x: i32, y: i32 },
+			Float(f32, i32),
+			[@SKIP]
+			Bool(bool),
+			Test,
+		}
+	}
+}
+
+#[allow(unused)]
+#[cfg(test)]
+mod test_generics {
+	use crate::extract_variants;
+
+	extract_variants! {
+		#[vars(derive(Debug, Clone))]
+		#[derive(Debug)]
+		pub enum Num {
+			#[derive(PartialEq)]
+			Int <['a, T: Clone]> { field: &'a T },
 			UInt { x: i32, y: i32 },
 			Float(f32, i32),
 			[@SKIP]
