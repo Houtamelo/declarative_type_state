@@ -4,7 +4,7 @@ macro_rules! enum_delegate_impls {
 	    ENUM_IN: {
 		    $enum_ident: ident
 		    $( <[ $( $enum_gen: tt )* ]> )?
-			$( [where $( $enum_bound: tt )* ] )?
+			$( where [ $( $enum_bound: tt )* ] )?
 		    {
 				$( $var_ident: ident ( $var_ty: ty ) ),* // var_ty is ignored
 			    $(,)?
@@ -15,7 +15,7 @@ macro_rules! enum_delegate_impls {
 		    $(
 		        impl $( <[ $( $trait_gen: tt )*  ]> )? 
 		        trait $trait_ty: path
-		        $( [where $( $trait_bound: tt )* ] )?
+		        $( where [ $( $trait_bound: tt )* ] )?
 		        {
 				    $( [ $( $item: tt )* ] )*
 			    }
@@ -42,7 +42,7 @@ macro_rules! enum_delegate_impls {
 			    $(
 			        impl $( <[ $( $trait_gen )*  ]> )? 
 				    trait $trait_ty
-			        $( [where $( $trait_bound )* ] )?
+			        $( where [ $( $trait_bound )* ] )?
 			        {
 					    $( [ $( $item )* ] )*
 				    }
@@ -70,7 +70,7 @@ macro_rules! enum_delegate_impls {
 			$(
 				impl $( <[ $( $trait_gen: tt )*  ]> )? 
 		        trait $trait_ty: path
-				$( [where $( $trait_bound: tt )* ] )?
+				$( where [ $( $trait_bound: tt )* ] )?
 				{
 			        $( $item: tt )*
 		        }
@@ -95,7 +95,7 @@ macro_rules! enum_delegate_impls {
 				
 				impl $( <[ $( $trait_gen )*  ]> )?
 				trait $trait_ty
-				$( [where $( $trait_bound )* ] )?
+				$( where [ $( $trait_bound )* ] )?
 				{
 			        $( $item )*
 		        }
@@ -128,9 +128,9 @@ macro_rules! enum_delegate_impls {
 		$enum_ident: ident
 		$enum_vars: tt
 	
-		impl $( <[ $( $trait_gen: tt )*  ]> )? 
+		impl $( <[ $( $trait_gen: tt )* ]> )? 
 		trait $trait_ty: path
-		$( [where $( $trait_bound: tt )* ] )?
+		$( where [ $( $trait_bound: tt )* ] )?
 		{
 	        $( $item: tt )*
         }
@@ -159,8 +159,9 @@ macro_rules! enum_delegate_impls {
 	    }
 	
 		[
+		    $fn_vis: vis
 		    $( [$( $fn_type: ident )*] )?
-		    $fn_vis: vis fn $fn_ident: ident
+		    fn $fn_ident: ident
 		    $( < [ $( $gens: tt )* ] > )?
 		    (self $(, $arg_ident: ident: $arg_ty: ty )*  $(,)? )
 		    $( -> $ret_ty: ty )?
@@ -175,8 +176,9 @@ macro_rules! enum_delegate_impls {
 		    }
 		    
 		    [
+			    $fn_vis 
 			    $( [$( $fn_type )*] )?
-			    $fn_vis fn $fn_ident
+			    fn $fn_ident
 			    $( < [ $( $gens )* ] > )?
 			    (self $(, $arg_ident: $arg_ty )* )
 			    $( -> $ret_ty )?
@@ -194,8 +196,9 @@ macro_rules! enum_delegate_impls {
 	    }
 	
 		[
+		    $fn_vis: vis
 		    $( [$( $fn_type: ident )*] )?
-		    $fn_vis: vis fn $fn_ident: ident
+		    fn $fn_ident: ident
 		    $( < [ $( $gens: tt )* ] > )?
 		    (&self $(, $arg_ident: ident: $arg_ty: ty )*  $(,)? )
 		    $( -> $ret_ty: ty )?
@@ -210,8 +213,9 @@ macro_rules! enum_delegate_impls {
 		    }
 		    
 		    [
+			    $fn_vis
 			    $( [$( $fn_type )*] )?
-			    $fn_vis fn $fn_ident
+			    fn $fn_ident
 			    $( < [ $( $gens )* ] > )?
 			    (&self $(, $arg_ident: $arg_ty )* )
 			    $( -> $ret_ty )?
@@ -229,8 +233,9 @@ macro_rules! enum_delegate_impls {
 	    }
 	
 		[
+		    $fn_vis: vis
 		    $( [$( $fn_type: ident )*] )?
-		    $fn_vis: vis fn $fn_ident: ident
+		    fn $fn_ident: ident
 		    $( < [ $( $gens: tt )* ] > )?
 		    (&mut self $(, $arg_ident: ident: $arg_ty: ty )*  $(,)? )
 		    $( -> $ret_ty: ty )?
@@ -245,8 +250,9 @@ macro_rules! enum_delegate_impls {
 		    }
 		    
 		    [
+			    $fn_vis
 			    $( [$( $fn_type )*] )?
-			    $fn_vis fn $fn_ident
+			    fn $fn_ident
 			    $( < [ $( $gens )* ] > )?
 			    (&mut self $(, $arg_ident: $arg_ty )* )
 			    $( -> $ret_ty )?
@@ -264,8 +270,9 @@ macro_rules! enum_delegate_impls {
 	    }
 	
 		[
+		    $fn_vis: vis
 		    $( [$( $fn_type: ident )*] )?
-		    $fn_vis: vis fn $fn_ident: ident
+		    fn $fn_ident: ident
 		    $( < [ $( $gens: tt )* ] > )?
 		    ( $( $arg_ident: ident: $arg_ty: ty ),*  $(,)? )
 		    $( -> $ret_ty: ty )?
@@ -273,9 +280,10 @@ macro_rules! enum_delegate_impls {
 		    $(;)?
 		]
     ) => {
+	    $fn_vis 
 	    $( $( $fn_type )* )?
-	    $fn_vis fn $fn_ident
-	    $( < $( $gens )* > )?
+	    fn $fn_ident
+	    $( <$( $gens )*> )?
 	    ( $( $arg_ident: $arg_ty ),* )
 	    $( -> $ret_ty )?
 	    $( where $( $where_clause )* )?
@@ -307,8 +315,9 @@ macro_rules! enum_delegate_impls {
 	    }
 	
 		[
-			$( [$( $fn_type: ident )*] )?
-		    $fn_vis: vis fn $fn_ident: ident
+		    $fn_vis: vis
+		    $( [$( $fn_type: ident )*] )?
+			fn $fn_ident: ident
 		    $( < [ $( $gens: tt )* ] > )?
 		    ( self $(, $arg_ident: ident: $arg_ty: ty )* )
 		    $( -> $ret_ty: ty )?
@@ -316,12 +325,13 @@ macro_rules! enum_delegate_impls {
 		]
 		$args: tt
     ) => {
-		$( [$( $fn_type )*] )?
-	    $fn_vis fn $fn_ident
-	    $( < [ $( $gens )* ] > )?
+	    $fn_vis 
+		$( $( $fn_type )* )?
+		fn $fn_ident
+	    $( <$( $gens )*> )?
 	    ( self $(, $arg_ident: $arg_ty )* )
 	    $( -> $ret_ty )?
-	    $( where [ $( $where_clause )* ] )?
+	    $( where $( $where_clause )* )?
 		{
 			match self {
 			    $(
@@ -339,8 +349,9 @@ macro_rules! enum_delegate_impls {
 	    }
 	
 		[
+		    $fn_vis: vis
 			$( [$( $fn_type: ident )*] )?
-		    $fn_vis: vis fn $fn_ident: ident
+			fn $fn_ident: ident
 		    $( < [ $( $gens: tt )* ] > )?
 		    ( &self $(, $arg_ident: ident: $arg_ty: ty )* )
 		    $( -> $ret_ty: ty )?
@@ -348,12 +359,13 @@ macro_rules! enum_delegate_impls {
 		]
 		$args: tt
     ) => {
-		$( [$( $fn_type )*] )?
-	    $fn_vis fn $fn_ident
-	    $( < [ $( $gens )* ] > )?
+	    $fn_vis 
+		$( $( $fn_type )* )?
+		fn $fn_ident
+	    $( <$( $gens )*> )?
 	    ( &self $(, $arg_ident: $arg_ty )* )
 	    $( -> $ret_ty )?
-	    $( where [ $( $where_clause )* ] )?
+	    $( where $( $where_clause )* )?
 		{
 			match self {
 			    $(
@@ -371,8 +383,9 @@ macro_rules! enum_delegate_impls {
 	    }
 	
 		[
+		    $fn_vis: vis
 			$( [$( $fn_type: ident )*] )?
-		    $fn_vis: vis fn $fn_ident: ident
+			fn $fn_ident: ident
 		    $( < [ $( $gens: tt )* ] > )?
 		    ( &mut self $(, $arg_ident: ident: $arg_ty: ty )* )
 		    $( -> $ret_ty: ty )?
@@ -380,12 +393,13 @@ macro_rules! enum_delegate_impls {
 		]
 		$args: tt
     ) => {
-		$( [$( $fn_type )*] )?
-	    $fn_vis fn $fn_ident
-	    $( < [ $( $gens )* ] > )?
+	    $fn_vis
+	    $( $( $fn_type )* )?
+	    fn $fn_ident
+	    $( <$( $gens )*> )?
 	    ( &mut self $(, $arg_ident: $arg_ty )* )
 	    $( -> $ret_ty )?
-	    $( where [ $( $where_clause )* ] )?
+	    $( where $( $where_clause )* )?
 		{
 			match self {
 			    $(
@@ -814,7 +828,7 @@ mod test_generics_many {
 
 	enum_delegate_impls! {
 		ENUM_IN: {
-			StateEnum<['a, 'b, S, T]> [where 'b: 'a, T: Sized] {
+			StateEnum<['a, 'b, S, T]> where [ 'b: 'a, T: Sized] {
 				Int(State<i32>),
 				UInt(State<u32>),
 				Empty(Dummy<'a, 'b, S, T>),
@@ -822,23 +836,23 @@ mod test_generics_many {
 		}
 		
 		DELEGATES: { 
-			impl<['a, 'b, S, T]> trait Tick [where 'b: 'a, T: Sized] {
+			impl<['a, 'b, S, T]> trait Tick where [ 'b: 'a, T: Sized] {
 				[fn tick(&mut self, delta_time: f64)]
 				
 				[fn test(&self);]
 			}
 			
 			impl {
-				[pub fn other(&self) -> i64]
-				[pub(crate) fn and_so(&mut self)]
+				[pub [async unsafe] fn other(&self) -> i64]
+				[pub(crate) fn and_so<[D]>(&mut self, x: D)]
 			}
 		}
 	}
 
 	fn test<'a, 'b, S, T>(x: &mut StateEnum<'a, 'b, S, T>) where 'b: 'a, T: Sized {
 		x.tick(2.0);
-		x.other();
-		x.and_so();
+		unsafe { x.other() };
+		x.and_so::<i32>(5);
 	}
 
 	impl Tick for State<i32> {
@@ -876,7 +890,7 @@ mod test_generics_many {
 			todo!()
 		}
 
-		fn and_so(&mut self) {
+		fn and_so<T>(&mut self, x: T) {
 			todo!()
 		}
 	}
@@ -886,7 +900,7 @@ mod test_generics_many {
 			todo!()
 		}
 
-		fn and_so(&mut self) {
+		fn and_so<T>(&mut self, x: T) {
 			todo!()
 		}
 	}
@@ -896,7 +910,7 @@ mod test_generics_many {
 			todo!()
 		}
 
-		fn and_so(&mut self) {
+		fn and_so<D>(&mut self, x: D) {
 			todo!()
 		}
 	}
@@ -931,7 +945,7 @@ mod test_generics_many_with_trait_generics {
 
 	enum_delegate_impls! {
 		ENUM_IN: {
-			StateEnum<['a, 'b, S, T]> [where 'b: 'a, T: Sized] {
+			StateEnum<['a, 'b, S, T]> where [ 'b: 'a, T: Sized] {
 				Int(State<i32>),
 				UInt(State<u32>),
 				Empty(Dummy<'a, 'b, S, T>),

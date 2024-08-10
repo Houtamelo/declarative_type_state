@@ -45,7 +45,7 @@ macro_rules! enum_variants_convert {
 	(   
 		$enum_vis: vis enum $enum_ident: ident
 		$( <[ $( $enum_gen: tt )* ]> )?
-		$( [where $( $enum_bound: tt )* ] )?
+		$( where [ $( $enum_bound: tt )* ] )?
 		{
 		    $( 
 		        $var_ident: ident 
@@ -182,7 +182,7 @@ mod test_many_generics {
 
 	enum_variants_convert! {
 	     // Attributes not required
-	     enum Num<['a, 'b, T1, T2]> [where T1: Clone] { // visibility not required
+	     enum Num<['a, 'b, T1, T2]> where [ T1: Clone] { // visibility not required
 	         Int(i32),
 	         UInt(u32),
 	         Bool(bool),

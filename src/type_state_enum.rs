@@ -22,7 +22,7 @@ macro_rules! type_state_enum {
 		    $(
 		        impl $( <[ $( $trait_gen: tt )*  ]> )? 
 		        trait $trait_ty: path
-		        $( [where $( $trait_bound: tt )* ] )?
+		        $( where [ $( $trait_bound: tt )* ] )?
 		        {
 				    $( [ $( $item: tt )* ] )*
 			    }
@@ -105,7 +105,7 @@ macro_rules! type_state_enum {
 			    $(
 			        impl $( <[ $( $trait_gen )*  ]> )? 
 				    trait $trait_ty
-			        $( [where $( $trait_bound )* ] )?
+			        $( where [ $( $trait_bound )* ] )?
 			        {
 					    $( [ $( $item )* ] )*
 				    }
@@ -148,7 +148,7 @@ macro_rules! type_state_enum {
 		    $(
 		        impl $( <[ $( $trait_gen: tt )*  ]> )? 
 		        trait $trait_ty: path
-		        $( [where $( $trait_bound: tt )* ] )?
+		        $( where [ $( $trait_bound: tt )* ] )?
 		        {
 				    $( [ $( $item: tt )* ] )*
 			    }
@@ -187,7 +187,7 @@ macro_rules! type_state_enum {
 			    $(
 			        impl $( <[ $( $trait_gen )*  ]> )? 
 				    trait $trait_ty
-			        $( [where $( $trait_bound )* ] )?
+			        $( where [ $( $trait_bound )* ] )?
 			        {
 					    $( [ $( $item )* ] )*
 				    }

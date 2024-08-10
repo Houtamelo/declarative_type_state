@@ -132,7 +132,7 @@ macro_rules! extract_variants {
 		$( #[$enum_meta: meta] )*
 		$enum_vis: vis enum $enum_ident: ident
 	    $( <[ $( $generic: tt )* ]> )?  // Ignored
-		$( [where $( $bound: tt )* ] )? // Ignored
+		$( where [ $( $bound: tt )* ] )? // Ignored
 	    {
 		    $(
 		        $( [@ $ignore: ident] )?
@@ -141,7 +141,7 @@ macro_rules! extract_variants {
 		        $( <[ $( $var_gen: tt )* ]> )?
 		        $( ( $($var_tuple: tt)* ) )? 
 		        $( { $($var_fields: tt)* } )?
-		        $( [where $( $var_bound: tt )* ] )?
+		        $( where [ $( $var_bound: tt )* ] )?
 		    ),*
 		    $(,)?
 	    }

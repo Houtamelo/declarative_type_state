@@ -67,7 +67,7 @@ macro_rules! type_value_table {
 		    $(
 		        impl $( <[ $( $trait_gen: tt )*  ]> )? 
 		        trait $trait_ty: path
-		        $( [where $( $trait_bound: tt )* ] )?
+		        $( where [ $( $trait_bound: tt )* ] )?
 		        {
 				    $( [ $( $item: tt )* ] )*
 			    }
@@ -109,7 +109,7 @@ macro_rules! type_value_table {
 			    $(
 			        impl $( <[ $( $trait_gen )*  ]> )? 
 				    trait $trait_ty
-			        $( [where $( $trait_bound )* ] )?
+			        $( where [ $( $trait_bound )* ] )?
 			        {
 					    $( [ $( $item )* ] )*
 				    }
@@ -171,6 +171,7 @@ macro_rules! type_value_table {
 	    }
 		
 		#[doc(hidden)]
+		#[allow(clippy::too_many_arguments)]
 		pub mod new_fn {
 			use super::$table_ident;
 			

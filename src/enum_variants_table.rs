@@ -7,7 +7,7 @@ macro_rules! enum_variants_table {
 		    $( #[$enum_meta: meta] )*
 		    $enum_vis: vis enum $enum_ident: ident
 		    $( <[ $( $enum_gen: tt )* ]> )?
-			$( [where $( $enum_bound: tt )* ] )?
+			$( where [ $( $enum_bound: tt )* ] )?
 		    {
 				$(
 					$( #[$var_meta: meta] )*

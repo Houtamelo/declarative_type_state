@@ -5,7 +5,7 @@ macro_rules! delegated_enum {
 		    $( #[$enum_meta: meta] )*
 		    $enum_vis: vis enum $enum_ident: ident
 		    $( <[ $( $enum_gen: tt )* ]> )?
-			$( [where $( $enum_bound: tt )* ] )?
+			$( where [ $( $enum_bound: tt )* ] )?
 		    {
 			    $( $var_ident: ident ($var_ty: ty) ),*
 			    $(,)?
@@ -16,7 +16,7 @@ macro_rules! delegated_enum {
 		    $(
 		        impl $( <[ $( $trait_gen: tt )*  ]> )? 
 		        trait $trait_ty: path
-		        $( [where $( $trait_bound: tt )* ] )?
+		        $( where [ $( $trait_bound: tt )* ] )?
 		        {
 				    $( [ $( $item: tt )* ] )*
 			    }
@@ -40,7 +40,7 @@ macro_rules! delegated_enum {
 	    $crate::enum_variants_convert! {
 		    $enum_vis enum $enum_ident
 		    $( <[ $( $enum_gen )* ]> )?
-			$( [where $( $enum_bound )* ] )?
+			$( where [ $( $enum_bound )* ] )?
 		    {
 			    $( $var_ident ( $var_ty ) ),*
 		    }
@@ -50,7 +50,7 @@ macro_rules! delegated_enum {
 		    ENUM_IN: {
 			    $enum_ident
 			    $( <[ $( $enum_gen )* ]> )?
-				$( [where $( $enum_bound )* ] )? 
+				$( where [ $( $enum_bound )* ] )? 
 			    {
 					$( $var_ident ($var_ty) ),*
 		        }
@@ -60,7 +60,7 @@ macro_rules! delegated_enum {
 			    $(
 			        impl $( <[ $( $trait_gen )*  ]> )? 
 				    trait $trait_ty
-			        $( [where $( $trait_bound )* ] )?
+			        $( where [ $( $trait_bound )* ] )?
 			        {
 					    $( [ $( $item )* ] )*
 				    }
