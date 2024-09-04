@@ -60,7 +60,9 @@ macro_rules! type_table {
 		    $enum_vis: vis enum $enum_ident: ident {
 				$(
 					$( #[$var_meta: meta] )*
-					$var_ident: ident $( ( $($var_tuple: tt)* ) )? $( { $($var_fields: tt)* } )?
+					$var_ident: ident 
+					$( ( $($var_tuple: tt)* ) )? 
+					$( { $($var_fields: tt)* } )?
 			    ),*
 			    $(,)?
 		    }

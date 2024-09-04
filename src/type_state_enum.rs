@@ -3,7 +3,10 @@ macro_rules! type_state_enum {
 	//------------------------------------------------------------------------------------------------------------------
 	// User provided state struct
     (
-	    STATE: $state_ident: ident { $state_field_ident: ident }
+	    STATE: $state_ident: ident
+	    $( <[$( $state_gen: tt )*]> )?
+		$( where [$( $state_gen_bound: tt )*] )?
+	    { $state_field_ident: ident }
 
 	    ENUM_OUT: {
 		    #[vars( $( $all_meta: meta ),* $(,)? )]
@@ -36,7 +39,8 @@ macro_rules! type_state_enum {
 	    }
     ) => {
 	    $( #[$enum_meta] )*
-		$enum_vis enum $enum_ident {
+		$enum_vis enum $enum_ident
+	    {
 			$( $var_ident($state_ident<$var_ident>) ),*
 		}
 
@@ -118,6 +122,27 @@ macro_rules! type_state_enum {
 			    )?
 		    }
 	    }
+    };
+	
+	//------------------------------------------------------------------------------------------------------------------
+	// User provided state struct
+    (@ENUM_DEF
+        { $state_gen_1: ident }
+        
+        $state_ident: ident
+        
+	    #[vars( $( $all_meta: meta ),* $(,)? )]
+	    $( #[$enum_meta: meta] )*
+	    $enum_vis: vis enum $enum_ident: ident {
+			$( $var_ident: ident ),*
+		    $(,)?
+	    }
+    ) => {
+	    $( #[$enum_meta] )*
+		$enum_vis enum $enum_ident
+	    {
+			$( $var_ident($state_ident<$var_ident, $state_gen_1>) ),*
+		}
     };
 	
 	//------------------------------------------------------------------------------------------------------------------
@@ -282,3 +307,85 @@ mod test {
 		}
 	}
 }
+
+/*
+#[cfg(test)]
+#[allow(unused)]
+#[allow(non_camel_case_types)]
+mod test_1 {
+	use crate::transition_result::Transition;
+
+	#[derive(Clone, Debug)]
+	pub struct State<T: ?Sized + 'static> {
+		state: T,
+	}
+
+	#[derive(Debug, Clone)]
+	pub struct CustomType;
+
+	type_state_enum! {
+		STATE: State where [Next: 'static] { state }
+		
+		ENUM_OUT: {
+			#[vars(derive(Clone, Debug))]
+			#[derive(Debug, Clone)]
+			pub enum StateEnum {
+				#[derive(PartialEq)] 
+				 Int { field: i32 },
+				 UInt {
+					 x: i32,
+					 y: i32,
+				 },
+				 Float(f32, i32),
+				 [@SKIP]
+				 CustomType,
+				 Unit,
+			}
+		}
+		
+		DELEGATES: { 
+			impl trait Tick {
+				[fn tick(&mut self, delta_time: f64);]
+			}
+		}
+	}
+
+	fn test(mut x: State<Int>) {
+		let t: Transition<State<Int>, StateEnum> = x.transition_to(Unit);
+	}
+
+	trait Tick {
+		fn tick(&mut self, delta_time: f64);
+	}
+
+	impl Tick for State<Int> {
+		fn tick(&mut self, delta_time: f64) {
+			todo!()
+		}
+	}
+
+	impl Tick for State<UInt> {
+		fn tick(&mut self, delta_time: f64) {
+			todo!()
+		}
+	}
+
+	impl Tick for State<Float> {
+		fn tick(&mut self, delta_time: f64) {
+			todo!()
+		}
+	}
+
+	impl Tick for State<CustomType> {
+		fn tick(&mut self, delta_time: f64) {
+			todo!()
+		}
+	}
+
+	impl Tick for State<Unit> {
+		fn tick(&mut self, delta_time: f64) {
+			todo!()
+		}
+	}
+}
+*/

@@ -17,3 +17,22 @@ mod enum_variants_table;
 mod transition_result;
 pub use transition_result::{Transition, Transition::Unchanged, Transition::ChangedTo};
 
+pub trait FromEnum<Enum> {
+	fn from_enum(t: Enum) -> Option<Self> where Self: Sized;
+}
+
+pub trait ToVariant<Variant> {
+	fn to_variant(self) -> Option<Variant>;
+}
+
+impl<Enum, Variant> ToVariant<Variant> for Enum where Variant: FromEnum<Enum> {
+	fn to_variant(self) -> Option<Variant> { Variant::from_enum(self) }
+}
+
+pub trait Is {
+	fn is<Variant>(&self) -> bool where for<'a> &'a Self: ToVariant<&'a Variant> {
+		self.to_variant().is_some()
+	}
+}
+
+impl<T> Is for T {}

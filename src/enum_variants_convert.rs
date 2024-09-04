@@ -1,43 +1,51 @@
-/// # Given an enum, implements for each variant field's type:
+/// # Implements for each variant's type:
 /// - From<Variant> for Enum
 /// - TryFrom<Enum> for Variant
 ///
-/// This macro does not declare the enum, you should do it yourself outside its invocation
+/// # Input
+/// - `ENUM`: Defines the input enum with its visibility, name, generics, where clauses, and variants.
+///
+/// ## ENUM:
+///
+/// ```pseudo
+/// [enum_vis] enum [name]<[generics]> [where [bounds]] {
+///     [var_name_A]([var_type_A]),
+///     [var_name_B]([var_type_B]),
+/// }
+/// ```
+///
+/// - `[enum_vis]`: Visibility level of the enum. (e.g., `pub`)
+/// - `[name]`: Identifier (name) of the enum. (e.g., `MyEnum`)
+/// - `[generics]`: Optional generics for the enum, must be placed inside brackets. (e.g., `<[T]>`)
+/// - `where [bounds]`: Optional where clause for the enum, must be placed inside brackets. (e.g., `where [T: SomeTrait]`)
+/// - `[var_name]([var_type])`: Variants of the enum along with their types. (e.g., `VariantOne(TypeOne), VariantTwo(TypeTwo)`)
 ///
 /// # Example
 ///
-/// ```
-/// #![feature(macro_metavar_expr)]
+/// ```rust
 /// use declarative_type_state::enum_variants_convert;
 ///
 /// #[derive(Debug, PartialEq, Eq)]
-/// pub enum Num {
+/// pub enum Integer {
 ///     Int(i32),
 ///     UInt(u32),
-///     Bool(bool),
-///     Empty(()),
+///     Long(i64),
+///     ULong(u64),
 /// }
 ///
 /// enum_variants_convert! {
-///     // Attributes not required
-///     enum Num { // visibility not required
+///     enum Integer {
 ///         Int(i32),
 ///         UInt(u32),
-///         Bool(bool),
-///         Empty(()),
+///         Long(i64),
+///         ULong(u64),
 ///     }
 /// }
 ///
-/// // After invoking the macro, you should be able to seamlessly convert from a variant's type to the enum
-/// let int = 5;
-/// let num: Num = int.into();
-/// assert_eq!(num, Num::Int(5));
-/// assert_eq!(Ok(5), i32::try_from(num));
+/// let integer = Integer::from(5_i32);
+/// assert_eq!(integer, Integer::Int(5));
+/// assert_eq!(Ok(5_i32), i32::try_from(integer));
 /// ```
-///
-/// # Restrictions
-/// - All variants must be tuples with a single field
-/// - All variants' type must be unique
 #[macro_export]
 macro_rules! enum_variants_convert {
 	//------------------------------------------------------------------------------------------------------------------
@@ -114,12 +122,44 @@ macro_rules! enum_variants_convert {
 				}
 			}
 		}
+		
+		impl<$( $generic )*> $crate::FromEnum<$enum_ident<$( $generic )*>> for $var_ty where $( $bound )* {
+			fn from_enum(value: $enum_ident<$( $generic )*>) -> Option<Self> {
+				if let $enum_ident::$var_ident(var) = value {
+					Some(var)
+				} else {
+					None
+				}
+			}
+		}
+		
+		impl<'__a, $( $generic )*> $crate::FromEnum<&'__a $enum_ident<$( $generic )*>> for &'__a $var_ty where $( $bound )* {
+			fn from_enum(value: &'__a $enum_ident<$( $generic )*>) -> Option<Self> {
+				if let $enum_ident::$var_ident(var) = value {
+					Some(var)
+				} else {
+					None
+				}
+			}
+		}
+		
+		impl<'__a, $( $generic )*> $crate::FromEnum<&'__a mut $enum_ident<$( $generic )*>> for &'__a mut $var_ty where $( $bound )* {
+			fn from_enum(value: &'__a mut $enum_ident<$( $generic )*>) -> Option<Self> {
+				if let $enum_ident::$var_ident(var) = value {
+					Some(var)
+				} else {
+					None
+				}
+			}
+		}
 	};
 }
 
-
+#[allow(unused)]
 #[cfg(test)]
 mod tests {
+	use crate::Is;
+
 	#[derive(Debug, PartialEq, Eq)]
 	pub enum Num {
 		Int(i32),
@@ -137,11 +177,19 @@ mod tests {
 	         Empty(()),
 	     }
 	}
+	
+	fn test(input: Num) {
+		if input.is::<i32>() {
+			println!("is i32");
+		}
+	}
 }
 
+#[allow(unused)]
 #[cfg(test)]
 mod test_generics {
 	use std::marker::PhantomData;
+	use crate::Is;
 
 	#[derive(Debug, PartialEq, Eq)]
 	pub enum Num<'a, T> {
@@ -162,6 +210,14 @@ mod test_generics {
 	         Bool(bool),
 	         Empty(Wrapper<'a, T>),
 	     }
+	}
+	
+	fn test<T>(input: Num<T>) {
+		if input.is::<u32>() {
+			print!("is u32");
+		} else if input.is::<Wrapper<T>>() {
+			print!("is Wrapper");
+		}
 	}
 }
 
