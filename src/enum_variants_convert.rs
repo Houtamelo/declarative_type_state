@@ -70,6 +70,24 @@ macro_rules! enum_variants_convert {
 				$( $var_ident ( $var_ty ) ),*
 			}
 		}
+		
+		impl $(<$( $enum_gen )*>)? $enum_ident $(<$( $enum_gen )*>)? $(where $( $enum_bound )*)? {
+			pub fn into_variant<Variant>(self) -> Option<Variant> where Variant: $crate::FromEnum<Self> {
+				Variant::from_enum(self)
+			}
+			
+			pub fn as_variant_ref<Variant>(&self) -> Option<&Variant> where Variant: $crate::FromEnumRef<Self> {
+				Variant::from_enum_ref(self)
+			}
+			
+			pub fn as_variant_mut<Variant>(&mut self) -> Option<&mut Variant> where Variant: $crate::FromEnumMut<Self> {
+				Variant::from_enum_mut(self)
+			}
+			
+			pub fn is<Variant>(&self) -> bool where Variant: $crate::FromEnumRef<Self> {
+				self.as_variant_ref::<Variant>().is_some()
+			}
+		}
     };
 	
 	//------------------------------------------------------------------------------------------------------------------
@@ -93,6 +111,8 @@ macro_rules! enum_variants_convert {
 				$var_ty
 			}
 		)*
+		
+		
 	};
 	
 	//------------------------------------------------------------------------------------------------------------------
@@ -158,7 +178,7 @@ macro_rules! enum_variants_convert {
 #[allow(unused)]
 #[cfg(test)]
 mod tests {
-	use crate::Is;
+	use crate::{FromEnum, FromEnumMut, FromEnumRef};
 
 	#[derive(Debug, PartialEq, Eq)]
 	pub enum Num {
@@ -178,9 +198,33 @@ mod tests {
 	     }
 	}
 	
-	fn test(input: Num) {
+	fn test(mut input: Num) {
 		if input.is::<i32>() {
 			println!("is i32");
+		}
+		
+		else if let Some(var) = input.as_variant_ref::<bool>() {
+			println!("is bool: {}", var);
+		}
+		
+		else if let Some(var) = input.as_variant_mut::<u32>() {
+			println!("is u32: {}", var);
+		} 
+		
+		else if let Some(var) = bool::from_enum_ref(&input) {
+			
+		}
+			
+		else if let Some(var) = bool::from_enum_mut(&mut input) {
+			
+		}
+			
+		else if let Some(var) = <&i32>::from_enum(&input) {
+			
+		}
+		
+		else if let Some(var) = input.into_variant::<i32>() {
+			println!("is i32: {}", var);
 		}
 	}
 }
@@ -189,8 +233,7 @@ mod tests {
 #[cfg(test)]
 mod test_generics {
 	use std::marker::PhantomData;
-	use crate::Is;
-
+	
 	#[derive(Debug, PartialEq, Eq)]
 	pub enum Num<'a, T> {
 		Int(i32),
