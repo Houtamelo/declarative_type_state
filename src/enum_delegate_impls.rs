@@ -521,9 +521,9 @@ macro_rules! enum_delegate_impls {
 		    $( $var_ident: ident ),*
 	    }
 	
-		[const $const_ident: ident: $const_ty: ty = $const_val: expr $(;)?]
+		[const $($token: tt)*]
 	) => {
-		const $const_ident: $const_ty = $const_val;
+		const $($token)*;
 	};
 	
 	//------------------------------------------------------------------------------------------------------------------
@@ -533,9 +533,9 @@ macro_rules! enum_delegate_impls {
 		    $( $var_ident: ident ),*
 	    }
 	
-		[type $type_ident: ident = $type_ty: ty $(;)?]
+		[type $($token: tt)*]
 	) => {
-		type $type_ident = $type_ty;
+		type $($token)*;
 	};
 }
 
@@ -1045,6 +1045,9 @@ mod test_generics_many_with_trait_generics {
 	}
 
 	trait Tick<T: ?Sized> {
+		const IGNORED: i32;
+		type Ignored<'a>;
+		
 		fn tick(&mut self, delta_time: T);
 	}
 
@@ -1059,6 +1062,8 @@ mod test_generics_many_with_trait_generics {
 		
 		DELEGATES: { 
 			impl<['a, 'b, S, T, G]> trait Tick<G> {
+				[const IGNORED: i32 = 5]
+				[type Ignored<'s> = i32]
 				[fn tick(&mut self, delta_time: G)]
 			}
 			
@@ -1080,12 +1085,18 @@ mod test_generics_many_with_trait_generics {
 	}
 
 	impl<G> Tick<G> for State<i32> {
+		const IGNORED: i32 = 5;
+		type Ignored<'a> = i32;
+		
 		fn tick(&mut self, delta_time: G) {
 			todo!()
 		}
 	}
 
 	impl<G> Tick<G> for State<u32> {
+		const IGNORED: i32 = 5;
+		type Ignored<'a> = i32;
+		
 		fn tick(&mut self, delta_time: G) {
 			todo!()
 		}
@@ -1096,6 +1107,9 @@ mod test_generics_many_with_trait_generics {
 			'b: 'a,
 			T: Sized
 	{
+		const IGNORED: i32 = 10;
+		type Ignored<'s> = i32;
+		
 		fn tick(&mut self, delta_time: G) {
 			todo!()
 		}
