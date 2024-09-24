@@ -8,13 +8,18 @@ pub use transition_result::{Transition, Transition::ChangedTo, Transition::Uncha
 mod extract_variants_into_enum;
 mod type_table;
 mod type_value_table;
-mod enum_variants_convert;
 mod type_state_enum;
-mod enum_delegate_impls;
 mod delegated_enum;
 mod extract_single_variant;
 mod extract_variants;
+
+mod enum_variants_convert;
+mod enum_delegate_impls;
 mod enum_variants_table;
+
+mod unit_enum_variants_convert;
+mod unit_enum_delegate_impls;
+mod unit_enum_delegated;
 
 mod transition_result;
 
@@ -27,8 +32,7 @@ pub trait FromEnumRef<Enum> {
 }
 
 impl<Enum, Variant> FromEnumRef<Enum> for Variant
-	where
-			for<'a> &'a Variant: FromEnum<&'a Enum>,
+	where for<'a> &'a Variant: FromEnum<&'a Enum>,
 {
 	fn from_enum_ref(t: &Enum) -> Option<&Self> { <&Variant>::from_enum(t) }
 }
