@@ -27,6 +27,10 @@ pub trait FromEnum<Enum>: Sized {
 	fn from_enum(t: Enum) -> Option<Self>;
 }
 
+impl<T> FromEnum<T> for T {
+	fn from_enum(t: T) -> Option<Self> { Some(t) }
+}
+
 pub trait FromEnumRef<Enum> {
 	fn from_enum_ref(t: &Enum) -> Option<&Self>;
 }
