@@ -9,6 +9,8 @@ mod extract_variants_into_enum;
 mod type_table;
 mod type_value_table;
 mod type_state_enum;
+mod newtype_table;
+
 mod delegated_enum;
 mod extract_single_variant;
 mod extract_variants;
@@ -50,4 +52,14 @@ impl<Enum, Variant> FromEnumMut<Enum> for Variant
 			for<'a> &'a mut Variant: FromEnum<&'a mut Enum>,
 {
 	fn from_enum_mut(t: &mut Enum) -> Option<&mut Self> { <&mut Variant>::from_enum(t) }
+}
+
+#[doc(hidden)]
+pub use paste::paste;
+
+#[doc(hidden)]
+pub trait MemberOf<Table> {
+	type MemberType;
+	fn get_in_table(table: &Table) -> &Self::MemberType;
+	fn get_in_table_mut(table: &mut Table) -> &mut Self::MemberType;
 }

@@ -1,6 +1,6 @@
 [package]
 name = "declarative_type_state"
-version = "0.6.0"
+version = "0.7.0"
 authors = ["Houtamelo"]
 edition = "2021"
 description = "A collection of declarative macros to reduce boilerplate code when implementing type-state patterns"
@@ -11,3 +11,6 @@ keywords = ["declarative", "macros", "type-state", "enum", "patterns"]
 
 [lib]
 crate-type = ["lib", "cdylib"]
+
+[dependencies]
+paste = "1.0"
