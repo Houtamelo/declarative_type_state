@@ -157,6 +157,32 @@ macro_rules! type_value_table {
 		}
 	};
 
+	// Table only
+	(
+		$( #[$table_meta: meta] )*
+		$table_vis: vis struct $table_ident: ident< $gen: ident >
+		$( where [ $( $bounds: tt )* ] )?
+		{
+		    $( $var_ident: ident ),*
+		    $(,)?
+	    }
+	) => {
+		$crate::paste! {
+			$crate::type_value_table! {
+				@TABLE_INTERNAL
+				[<$table_ident Member>]
+
+				$( #[$table_meta] )*
+				$table_vis struct $table_ident< $gen >
+				[$( $( $bounds )* )?]
+				$( where [ $( $bounds )* ] )?
+				{
+				    $( $var_ident ),*
+			    }
+			}
+		}
+	};
+
 	//------------------------------------------------------------------------------------------------------------------
 	// Base impl
 	(
@@ -344,6 +370,33 @@ mod tests_2 {
 			impl trait Debug {
 				[fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error>]
 			}
+		}
+	}
+}
+
+#[allow(unused)]
+#[cfg(test)]
+mod tests_3 {
+	use std::fmt::{Debug, Formatter};
+
+	use crate::type_value_table;
+
+	#[derive(Debug, Clone)]
+	pub struct Sealed;
+
+	struct Seconds;
+	struct DaysSeconds;
+	struct HoursMinutes;
+	struct Infinite;
+
+	type_value_table! {
+		// Name of the module that will contain all the generated code
+		#[derive(Debug, Clone)] // Attributes to apply on the Table
+		pub struct DurationTable < T > where [T: Copy] {
+			Seconds,
+			DaysSeconds,
+			HoursMinutes,
+			Infinite,
 		}
 	}
 }

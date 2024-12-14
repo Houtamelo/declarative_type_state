@@ -281,9 +281,6 @@ mod tests {
 	}
 }
 
-/// ```
-///
-/// ```
 #[allow(unused)]
 #[cfg(test)]
 mod tests_2 {
@@ -340,5 +337,30 @@ mod tests_2 {
 			}
 		);
 		assert_eq!(infinite, &Infinite);
+	}
+}
+
+#[allow(unused)]
+#[cfg(test)]
+mod tests_3 {
+	use crate::type_table;
+
+	#[derive(Debug, Clone)]
+	pub struct Seconds;
+	#[derive(Debug, Clone)]
+	pub struct DaysSeconds;
+	#[derive(Debug, Clone)]
+	pub struct HoursMinutes;
+	#[derive(Debug, Clone)]
+	pub struct Infinite;
+
+	type_table! {
+		#[derive(Debug, Clone)]
+		pub struct DurationTable {
+			Seconds: Seconds,
+			DaysSeconds: DaysSeconds,
+			HoursMinutes: HoursMinutes,
+			Infinite: Infinite,
+		}
 	}
 }
