@@ -148,6 +148,38 @@ macro_rules! type_table {
 			    $( $var_ident: $var_ty ),*
 		    }
 		}
+
+		$crate::paste! {
+			impl IntoIterator for $table_ident {
+			    type Item = $enum_ident;
+				type IntoIter = core::array::IntoIter<$enum_ident, { $table_ident::LENGTH }>;
+
+				fn into_iter(self) -> Self::IntoIter {
+					[ $( $enum_ident::$var_ident(self.[<$var_ident:snake:lower>]) ),* ].into_iter()
+				}
+		    }
+		}
+	};
+
+	// Table only
+	(
+		$( #[$table_meta: meta] )*
+		$table_vis: vis struct $table_ident: ident {
+		    $( $var_ident: ident: $var_ty: ty ),*
+		    $(,)?
+	    }
+	) => {
+		$crate::paste! {
+			$crate::type_table! {
+				@TABLE_INTERNAL
+				[<$table_ident Member>]
+
+				$( #[$table_meta] )*
+				$table_vis struct $table_ident {
+				    $( $var_ident: $var_ty ),*
+			    }
+			}
+		}
 	};
 
 	//------------------------------------------------------------------------------------------------------------------
@@ -222,15 +254,6 @@ macro_rules! type_table {
 					].into_iter()
 				}
 			}
-
-			impl IntoIterator for $table_ident {
-			    type Item = $enum_ident;
-				type IntoIter = core::array::IntoIter<$enum_ident, { $table_ident::LENGTH }>;
-
-				fn into_iter(self) -> Self::IntoIter {
-					[ $( $enum_ident::$var_ident(self.[<$var_ident:snake:lower>]) ),* ].into_iter()
-				}
-		    }
 		}
 	};
 }
