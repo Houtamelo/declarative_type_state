@@ -155,7 +155,7 @@ macro_rules! type_table {
 				type IntoIter = core::array::IntoIter<$enum_ident, { $table_ident::LENGTH }>;
 
 				fn into_iter(self) -> Self::IntoIter {
-					[ $( $enum_ident::$var_ident(self.[<$var_ident:snake:lower>]) ),* ].into_iter()
+					[ $( $enum_ident::$var_ident(self.[<$var_ident:snake:lower>].into()) ),* ].into_iter()
 				}
 		    }
 		}
